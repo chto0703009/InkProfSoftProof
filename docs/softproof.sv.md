@@ -15,6 +15,15 @@ InkProf Soft Proof jämför en bild med en beräknad simulering av dess utskrift
 
 Paketet är ad hoc-signerat men saknar Developer ID-signering och Apple-notarisering. Om macOS blockerar första starten, granska appen i **Systeminställningar > Integritet och säkerhet > Öppna ändå**. DMG-filen innehåller båda handböckerna, GPL-licensen och appens källkod.
 
+### Välj rätt app för din dator
+
+| Dator | App och märkning |
+| --- | --- |
+| Apple Silicon, exempelvis M1, M2 eller M3 | InkProf Soft Proof - Apple Silicon.app, märkt ARM64 |
+| Intel-processor | InkProf Soft Proof - Intel.app, märkt INTEL |
+
+Kontrollera processorn i **Apple-menyn > Om den här datorn** om du är osäker. Installera en app. ARM64-appen körs direkt utan Rosetta på Apple Silicon; Intel-appen körs direkt på en Intel-Mac. Rosetta används bara i vårt test av Intel-versionen på Apple Silicon.
+
 ### Börja med en känd bild
 
 Välj **Öppna bild**, välj sedan arbetsfärgrymd och skrivar-/pappersprofil. Originalet visas till vänster och den aktuella simuleringen till höger. En bild utan profil behöver en uttryckligen vald källprofil för att dess färger ska kunna tolkas.

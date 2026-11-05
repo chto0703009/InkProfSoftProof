@@ -15,6 +15,15 @@ Open `InkProfSoftProof-2.2.0-macos.dmg`, choose **Apple Silicon** or **Intel** t
 
 The package is ad hoc signed, but not Developer ID signed or Apple-notarized. If macOS blocks the first launch, review it in **System Settings > Privacy & Security > Open Anyway**. The DMG includes both manuals, the GPL license and application source.
 
+### Choose the app for your Mac
+
+| Computer | App and badge |
+| --- | --- |
+| Apple Silicon, such as M1, M2 or M3 | InkProf Soft Proof - Apple Silicon.app, ARM64 badge |
+| Intel processor | InkProf Soft Proof - Intel.app, INTEL badge |
+
+Check **Apple menu > About This Mac** if unsure. Install one app. ARM64 runs natively without Rosetta on Apple Silicon; the Intel app runs natively on an Intel Mac. Rosetta is used only in our Intel-build test on Apple Silicon.
+
 ### Start with a known image
 
 Choose **Open image**, then select the working colour space and printer/paper ICC profile. The original appears on the left and the current simulation on the right. An untagged image needs an explicitly chosen source profile before its colours can be interpreted.

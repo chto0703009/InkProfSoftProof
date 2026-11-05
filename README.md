@@ -9,11 +9,19 @@ A Python macOS application for comparing ICC colour-space conversions and simula
 
 ## Install
 
-The standalone installer is `InkProfSoftProof-2.2.0-macos.dmg` for **macOS 14 or later**. It contains two separately labelled apps, not one universal binary: **InkProf Soft Proof - Apple Silicon.app** (ARM64) and **InkProf Soft Proof - Intel.app** (x86_64).
+Download the installer from [GitHub Releases](https://github.com/chto0703009/InkProfSoftProof/releases/latest). The file is `InkProfSoftProof-2.2.0-macos.dmg` for **macOS 14 or later**. It contains two separately labelled apps, not one universal binary: **InkProf Soft Proof - Apple Silicon.app** (ARM64) and **InkProf Soft Proof - Intel.app** (x86_64).
 
 1. Open the DMG and drag **only the app matching your Mac** to Applications: **Apple Silicon** for an Apple-chip Mac (M1/M2/M3 etc), or **Intel** for an Intel Mac.
 2. Eject the disk image and launch the app from Applications.
-3. Open an image and select the printer/paper ICC profile.
+
+| Your Mac | App to install | Execution |
+| --- | --- | --- |
+| Apple Silicon (M1, M2, M3 and later Apple chips) | InkProf Soft Proof - Apple Silicon.app; ARM64 badge | Native ARM64, no Rosetta |
+| Intel processor | InkProf Soft Proof - Intel.app; INTEL badge | Native x86_64 on an Intel Mac |
+
+Check **Apple menu > About This Mac** if you are unsure which processor you have. Choose one app; you do not need to install both. Rosetta was used to test the Intel build on the Apple Silicon development machine; it is not required to run the Intel app on an Intel Mac.
+
+Open an image and select the printer/paper ICC profile.
 
 Python and the required libraries are included. The installed app does not require this repository, Xcode or a separate Python installation. The package is ad hoc signed, but is not Developer ID signed or Apple-notarized. If macOS blocks the first launch, review the app in **System Settings > Privacy & Security > Open Anyway**.
 
