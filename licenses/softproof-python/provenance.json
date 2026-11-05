@@ -1,0 +1,23 @@
+[
+  {
+    "package": "pyobjc-framework-cocoa",
+    "version": "13.0",
+    "source": "local-config/softproof-python/vendor/pyobjc_framework_cocoa-13.0.dist-info/licenses/LICENSE.txt",
+    "notice": "pyobjc_framework_cocoa-13.0-LICENSE.txt",
+    "sha256": "0ca04b07928d4872b9d9bb22187ca0426dd8bfab08f26eada0999a71dc81aaff"
+  },
+  {
+    "package": "pyobjc-framework-quartz",
+    "version": "13.0",
+    "source": "local-config/softproof-python/vendor/pyobjc_framework_quartz-13.0.dist-info/licenses/LICENSE.txt",
+    "notice": "pyobjc_framework_quartz-13.0-LICENSE.txt",
+    "sha256": "0ca04b07928d4872b9d9bb22187ca0426dd8bfab08f26eada0999a71dc81aaff"
+  },
+  {
+    "package": "pyobjc-core",
+    "version": "13.0",
+    "source": "https://raw.githubusercontent.com/ronaldoussoren/pyobjc/v13.0/pyobjc-core/License.txt",
+    "notice": "pyobjc-core-13.0-LICENSE.txt",
+    "sha256": "0ca04b07928d4872b9d9bb22187ca0426dd8bfab08f26eada0999a71dc81aaff"
+  }
+]

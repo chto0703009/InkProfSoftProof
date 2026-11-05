@@ -1,0 +1,5 @@
+# GUI-only dependencies. Install in local-config/softproof-python/vendor.
+# The shared InkProf requirements.txt and .venv are not changed.
+pyobjc-core==13.0
+pyobjc-framework-Cocoa==13.0
+pyobjc-framework-Quartz==13.0

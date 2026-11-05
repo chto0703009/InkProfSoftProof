@@ -1,0 +1,6 @@
+# Python 3.13 runtime for source use; GPL application, dependencies keep their licenses.
+pillow==12.3.0
+numpy==2.3.2
+pyobjc-core==13.0
+pyobjc-framework-Cocoa==13.0
+pyobjc-framework-Quartz==13.0
