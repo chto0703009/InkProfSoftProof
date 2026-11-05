@@ -2,14 +2,14 @@
 
 A Python macOS application for comparing ICC colour-space conversions and simulating printer/paper output. Compare the original and a soft proof side by side, lock an A/B reference, and click an image to follow a colour through the source, working and printer profiles in CIELAB D50.
 
-**Version:** 2.1.1
+**Version:** 2.1.2
 **Author:** Christer Törnkvist
 **Contact:** [christer@borgasundsfotografiska.se](mailto:christer@borgasundsfotografiska.se)
 **License:** [GNU GPL version 3 or later](LICENSE) (`GPL-3.0-or-later`). No warranty. See [license scope](LICENSE_SCOPE.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## Install
 
-The standalone installer is `InkProfSoftProof-2.1.1-arm64.dmg` for **Apple Silicon, macOS 14 or later**.
+The standalone installer is `InkProfSoftProof-2.1.2-arm64.dmg` for **Apple Silicon, macOS 14 or later**.
 
 1. Open the DMG and drag **InkProf Soft Proof.app** to **Applications**.
 2. Eject the disk image and launch the app from Applications.

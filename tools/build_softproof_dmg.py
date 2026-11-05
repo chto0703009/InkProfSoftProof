@@ -119,7 +119,7 @@ def source_archive(destination):
              'THIRD_PARTY_NOTICES.md','licenses/softproof-python','licenses/fonts','resources/fonts',
              'tools/render_manuals.py','tools/launch_softproof.py','tools/requirements-docs.txt',
              'docs/softproof.en.md','output/pdf/InkProfSoftProof-Manual-sv.pdf','output/pdf/InkProfSoftProof-Manual-en.pdf',
-             'Starta Soft proof.command','Starta ICC-konvertering.command','tools/icc_converter.py']
+             'Starta Soft proof.command']
     with tarfile.open(destination, 'w:gz') as archive:
         for item in paths: archive.add(ROOT/item, arcname='InkProfSoftProof-source/'+item)
 

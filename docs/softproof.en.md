@@ -1,6 +1,6 @@
 # InkProf Soft Proof
 
-User guide - version 2.1.1 - 5 November 2026
+User guide - version 2.1.2 - 5 November 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 or later (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ InkProf Soft Proof compares an image with a prediction of its printed appearance
 
 ### Install the app
 
-Open `InkProfSoftProof-2.1.1-arm64.dmg`, drag **InkProf Soft Proof.app** to **Applications**, eject the disk image and launch the app from Applications. The standalone package targets **Apple Silicon and macOS 14 or later**. Python and the required libraries are included; the development project is not needed.
+Open `InkProfSoftProof-2.1.2-arm64.dmg`, drag **InkProf Soft Proof.app** to **Applications**, eject the disk image and launch the app from Applications. The standalone package targets **Apple Silicon and macOS 14 or later**. Python and the required libraries are included; the development project is not needed.
 
 The package is ad hoc signed, but not Developer ID signed or Apple-notarized. If macOS blocks the first launch, review it in **System Settings > Privacy & Security > Open Anyway**. The DMG includes both manuals, the GPL license and application source.
 
