@@ -24,15 +24,6 @@ class SoftProofTests(unittest.TestCase):
             result = engine.stage(self.image, self.srgb, self.srgb, 0, True)
         self.assertEqual(result.tobytes(), self.image.tobytes())
 
-    def test_proof_transform_arguments(self):
-        with patch.object(engine.ImageCms, 'buildProofTransformFromOpenProfiles', wraps=ImageCms.buildProofTransformFromOpenProfiles) as build:
-            engine.previews(self.image, self.srgb, self.srgb, self.srgb, self.srgb, 0, True, True)
-            options = build.call_args.kwargs
-            self.assertEqual(options['renderingIntent'], 0)
-            self.assertEqual(options['proofRenderingIntent'], 3)
-            self.assertTrue(options['flags'] & ImageCms.Flags.SOFTPROOFING)
-            self.assertTrue(options['flags'] & ImageCms.Flags.BLACKPOINTCOMPENSATION)
-
     def test_all_intents_and_bpc_and_paper(self):
         for intent in (0, 1, 3):
             for bpc in (False, True):

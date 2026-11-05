@@ -1,6 +1,6 @@
 # InkProf Soft Proof
 
-Handbok - version 2.2.0 - 5 november 2026
+Handbok - version 2.2.1 - 5 november 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 eller senare (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ InkProf Soft Proof jämför en bild med en beräknad simulering av dess utskrift
 
 ### Installera appen
 
-Öppna `InkProfSoftProof-2.2.0-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar för **macOS 14 eller senare**. Apple Silicon är ARM64; Intel är x86_64. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
+Öppna `InkProfSoftProof-2.2.1-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar för **macOS 14 eller senare**. Apple Silicon är ARM64; Intel är x86_64. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
 
 Paketet är ad hoc-signerat men saknar Developer ID-signering och Apple-notarisering. Om macOS blockerar första starten, granska appen i **Systeminställningar > Integritet och säkerhet > Öppna ändå**. DMG-filen innehåller båda handböckerna, GPL-licensen och appens källkod.
 
@@ -57,6 +57,8 @@ Olika metoder kan ge samma resultat när profilen inte har skilda mappningar.
 **Svartpunktskompensation** anpassar mappningen av mörka toner mellan profiler. Den synliga effekten beror på profilerna och återgivningsmetoden.
 
 **Simulera pappersvitt** är en separat skärminställning. Den väljer absolut kolorimetrisk återgivning från proofprofil till visningsrymd; konverteringsmetoden till skrivaren är ett eget led. Inställningen påverkar förhandsvisningen, inte de sparade skrivarvärdena.
+
+Förhandsvisningen simulerar samma 8-bitars skrivarvärden som exporten. Svartpunktskompensation tillämpas inte igen mellan skrivare och skärm. Färgkonverteringen görs före förminskningen; stora bilder kan därför ta längre tid att uppdatera. JPEG-export kan ge ytterligare förändringar genom förstörande komprimering.
 
 ### Skärmens färghantering
 

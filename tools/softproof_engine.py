@@ -61,19 +61,13 @@ def previews(image, source, working, printer, display, intent, bpc, paper):
     staged = stage(image, source, working, intent, bpc)
     if printer is None:
         return original, process(staged, working, display, 'RGB', 1, False)
-    alpha = staged.getchannel('A') if staged.mode in ('RGBA', 'LA') else None
-    base = staged.convert('RGB' if staged.mode == 'RGBA' else 'L') if alpha is not None else staged
-    flags = ImageCms.Flags.SOFTPROOFING
-    if bpc:
-        flags |= ImageCms.Flags.BLACKPOINTCOMPENSATION
-    transform = ImageCms.buildProofTransformFromOpenProfiles(
-        working, display, printer, base.mode, 'RGB', renderingIntent=intent,
-        proofRenderingIntent=3 if paper else 1, flags=flags)
-    proof = ImageCms.applyTransform(base, transform)
-    if alpha is not None:
-        proof.putalpha(alpha)
-    proof.info.clear()
-    proof.info['icc_profile'] = display.tobytes()
+    # Quantise to the same printer pixels as export before simulating paper.
+    # A combined LCMS proof transform can select different LUT/optimisation
+    # paths and does not include the exported 8-bit device quantisation.
+    printed = process(staged, working, printer, profile_mode(printer), intent, bpc)
+    # BPC belongs to the device conversion. Applying it again on the display
+    # leg would remap the paper black towards screen black.
+    proof = process(printed, printer, display, 'RGB', 3 if paper else 1, False)
     return original, proof
 
 
@@ -105,14 +99,16 @@ def run(request):
         return dict(ok=True, **metadata, destination=request['destination'])
     display = load_profile(request['display'])
     # Bound computation and file sizes. Original dimensions are retained for zoom.
-    image.thumbnail((2000, 2000), Image.Resampling.LANCZOS)
     original, proof = previews(image, source, working, printer, display, intent, bpc,
                                request.get('paper', False))
     folder = Path(request['output'])
     folder.mkdir(parents=True, exist_ok=True)
     for name, preview in [('original', original), ('proof', proof)]:
+        # Convert before reducing: ICC transforms are nonlinear, so averaging
+        # source pixels first can change the predicted colour.
+        preview.thumbnail((2000, 2000), Image.Resampling.LANCZOS)
         preview.save(folder / (name + '.png'), icc_profile=display.tobytes())
-    return dict(ok=True, **metadata, previewWidth=image.width, previewHeight=image.height)
+    return dict(ok=True, **metadata, previewWidth=original.width, previewHeight=original.height)
 
 
 def main():

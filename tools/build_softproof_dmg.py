@@ -139,7 +139,7 @@ def source_archive(destination):
     paths = ['tools/softproof_app.py','tools/softproof_engine.py','tools/icc_processing.py','tools/gamut_analysis.py',
              'tools/runtime_architecture.py','tools/softproof.en.json','tools/build_softproof_dmg.py','tools/audit_softproof_architecture.py',
              'tools/requirements-softproof-build.txt','tools/requirements-softproof.txt','analysis/lcms_float.py',
-             'tests/test_softproof_engine.py','tests/test_softproof_architecture.py','docs/softproof.sv.md',
+             'tests/test_softproof_engine.py','tests/test_softproof_colour.py','tests/test_softproof_architecture.py','docs/softproof.sv.md',
              'LICENSE','LICENSE_SCOPE.md','AUTHORS.md','README.md','VERSION','AGENTS.md','.gitignore','.gitattributes','.python-version','requirements.txt',
              'THIRD_PARTY_NOTICES.md','licenses/softproof-python','licenses/fonts','resources/fonts',
              'tools/render_manuals.py','tools/launch_softproof.py','tools/requirements-docs.txt',

@@ -1,6 +1,6 @@
 # InkProf Soft Proof
 
-User guide - version 2.2.0 - 5 November 2026
+User guide - version 2.2.1 - 5 November 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 or later (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ InkProf Soft Proof compares an image with a prediction of its printed appearance
 
 ### Install the app
 
-Open `InkProfSoftProof-2.2.0-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps for **macOS 14 or later**. Apple Silicon is ARM64; Intel is x86_64. Install only the matching app. Python and the required libraries are included; the development project is not needed.
+Open `InkProfSoftProof-2.2.1-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps for **macOS 14 or later**. Apple Silicon is ARM64; Intel is x86_64. Install only the matching app. Python and the required libraries are included; the development project is not needed.
 
 The package is ad hoc signed, but not Developer ID signed or Apple-notarized. If macOS blocks the first launch, review it in **System Settings > Privacy & Security > Open Anyway**. The DMG includes both manuals, the GPL license and application source.
 
@@ -57,6 +57,8 @@ Different intents can produce the same result when the profile does not provide 
 **Black point compensation** adjusts the mapping of dark tones between profiles. Its visible effect depends on the profiles and rendering intent.
 
 **Simulate paper white** is a separate screen-proof setting. It selects absolute colorimetric proof-to-display rendering; the selected printer conversion intent remains a separate stage. This setting affects the preview, not the saved printer pixels.
+
+The preview simulates the same 8-bit printer values as export. Black point compensation is not applied again between printer and display. Colour conversion takes place before preview downsampling; large images can therefore take longer to update. Lossy JPEG export can introduce additional changes.
 
 ### Screen colour management
 

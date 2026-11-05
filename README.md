@@ -2,14 +2,14 @@
 
 A Python macOS application for comparing ICC colour-space conversions and simulating printer/paper output. Compare the original and a soft proof side by side, lock an A/B reference, and click an image to follow a colour through the source, working and printer profiles in CIELAB D50.
 
-**Version:** 2.2.0
+**Version:** 2.2.1
 **Author:** Christer Törnkvist
 **Contact:** [christer@borgasundsfotografiska.se](mailto:christer@borgasundsfotografiska.se)
 **License:** [GNU GPL version 3 or later](LICENSE) (`GPL-3.0-or-later`). No warranty. See [license scope](LICENSE_SCOPE.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## Install
 
-Download the installer from [GitHub Releases](https://github.com/chto0703009/InkProfSoftProof/releases/latest). The file is `InkProfSoftProof-2.2.0-macos.dmg` for **macOS 14 or later**. It contains two separately labelled apps, not one universal binary: **InkProf Soft Proof - Apple Silicon.app** (ARM64) and **InkProf Soft Proof - Intel.app** (x86_64).
+Download the installer from [GitHub Releases](https://github.com/chto0703009/InkProfSoftProof/releases/latest). The file is `InkProfSoftProof-2.2.1-macos.dmg` for **macOS 14 or later**. It contains two separately labelled apps, not one universal binary: **InkProf Soft Proof - Apple Silicon.app** (ARM64) and **InkProf Soft Proof - Intel.app** (x86_64).
 
 1. Open the DMG and drag **only the app matching your Mac** to Applications: **Apple Silicon** for an Apple-chip Mac (M1/M2/M3 etc), or **Intel** for an Intel Mac.
 2. Eject the disk image and launch the app from Applications.
@@ -68,6 +68,8 @@ python3.13 -m venv .venv
 Alternatively, double-click `Starta Soft proof.command` after creating the environment. `tools/launch_softproof.py` creates a development app launcher that uses this environment. It is separate from the self-contained installer.
 
 Core modules are `tools/icc_processing.py`, `tools/softproof_engine.py`, `tools/gamut_analysis.py`, `analysis/lcms_float.py` and `tools/runtime_architecture.py`. The GUI is `tools/softproof_app.py`; presentation strings are in `tools/softproof.en.json`. No Swift source or compiler is required.
+
+Colour regression checks compare sRGB-to-Lab against an independent mathematical reference and verify previews against reopened TIFF exports for installed RGB/CMYK printer profiles, all three intents, BPC on/off and paper white on/off. These are numerical checks; a calibrated-screen/physical-print comparison remains necessary for visual validation.
 
 ## Test
 
