@@ -113,5 +113,8 @@
   "Om InkProf Soft Proof": "About InkProf Soft Proof",
   "Visa GPL-licensen": "View the GPL license",
   "Fri programvara under GNU GPL version 3 eller senare. Programmet tillhandahålls utan garanti.": "Free software under the GNU GPL, version 3 or later. This program is provided without warranty.",
-  "Stäng": "Close"
+  "Stäng": "Close",
+  "Följ färgprovets L*": "Follow sample L*",
+  "L* (0–100):": "L* (0–100):",
+  "Kulörguide: a*/b* vid L*=%@. L* 0 är svart, 100 är vitt. Sidovyer: b*=0 respektive a*=0. Endast bakgrunden ändras; konturer och färgprov är oförändrade.": "Hue guide: a*/b* at L*=%@. L* 0 is black, 100 is white. Side views: b*=0 or a*=0. Only the background changes; contours and samples stay unchanged."
 }

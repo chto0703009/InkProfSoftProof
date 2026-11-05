@@ -1,6 +1,6 @@
 # InkProf Soft Proof
 
-User guide - version 2.2.1 - 5 November 2026
+User guide - version 2.2.2 - 5 November 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 or later (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ InkProf Soft Proof compares an image with a prediction of its printed appearance
 
 ### Install the app
 
-Open `InkProfSoftProof-2.2.1-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps for **macOS 14 or later**. Apple Silicon is ARM64; Intel is x86_64. Install only the matching app. Python and the required libraries are included; the development project is not needed.
+Open `InkProfSoftProof-2.2.2-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps for **macOS 14 or later**. Apple Silicon is ARM64; Intel is x86_64. Install only the matching app. Python and the required libraries are included; the development project is not needed.
 
 The package is ad hoc signed, but not Developer ID signed or Apple-notarized. If macOS blocks the first launch, review it in **System Settings > Privacy & Security > Open Anyway**. The DMG includes both manuals, the GPL license and application source.
 
@@ -100,7 +100,7 @@ The numerical rows show L*, a*, b*, device-channel values and **ΔE76 from the o
 
 ### Approximate colour background
 
-**Colour-tinted background** supplies a hue guide; **Strength** adjusts its visibility. In a*/b*, it uses the original sample's L* or 65 before selection. The side views hold b*=0 or a*=0. These are coloured slices behind projected contours, not a measurement of all colours in that projection. Display clipping and tinting make the background approximate.
+**Colour-tinted background** supplies a hue guide; **Strength** adjusts its visibility. In a*/b*, turn off **Follow sample L*** to choose background lightness from **0 to 100** with the slider or numeric field (press Enter). L* 0 is black and 100 is white. Turn it on to follow the original sample's L*, or 65 before selection. This changes only the approximate background, not samples, contours or export. The L* control is disabled in side views, where lightness is already an axis. The side views hold b*=0 or a*=0. These are coloured slices behind projected contours, not a measurement of all colours in that projection. Display clipping and tinting make the background approximate.
 
 ### Do not use outlines as an exact gamut test
 

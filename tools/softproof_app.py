@@ -227,6 +227,7 @@ class GamutPlot(A.NSView):
             self.projection = 0; self.visible_roles = set(ROLES)
             self.extents = [120, 160, 160]
             self.tint, self.strength = True, 0.5
+            self.manual_lightness = None
             cg_lab = Q.CGColorSpaceCreateWithName(Q.kCGColorSpaceGenericLab)
             self.lab_space = A.NSColorSpace.alloc().initWithCGColorSpace_(cg_lab)
             self.color_key, self.colors = None, []
@@ -234,6 +235,8 @@ class GamutPlot(A.NSView):
 
     @objc.python_method
     def lightness(self):
+        if self.manual_lightness is not None:
+            return self.manual_lightness
         points = self.data.get('points', [])
         return min(100, max(0, points[0]['lab'][0])) if points else 65
 
@@ -336,6 +339,20 @@ class GamutWindow:
         self.strength.setTarget_(target); self.strength.setAction_('action:'); ui.targets.append(target)
         self.strength.widthAnchor().constraintEqualToConstant_(130).setActive_(True)
         body.addArrangedSubview_(stack([self.background, ui.label('Styrka:'), self.strength]))
+        self.follow_lightness = button(ui, 'Följ färgprovets L*', self.change_lightness, True)
+        self.follow_lightness.setState_(A.NSControlStateValueOn)
+        self.lightness_slider = A.NSSlider.sliderWithValue_minValue_maxValue_target_action_(65, 0, 100, None, None)
+        self.lightness_slider.widthAnchor().constraintEqualToConstant_(180).setActive_(True)
+        self.lightness_value = A.NSTextField.alloc().initWithFrame_(R(0, 0, 64, 24))
+        self.lightness_value.widthAnchor().constraintEqualToConstant_(64).setActive_(True)
+        formatter = F.NSNumberFormatter.alloc().init()
+        formatter.setMinimum_(0); formatter.setMaximum_(100)
+        formatter.setMaximumFractionDigits_(1)
+        self.lightness_value.setFormatter_(formatter); self.lightness_value.setDoubleValue_(65)
+        for control in (self.lightness_slider, self.lightness_value):
+            target = Action.alloc().init(); target.callback = self.change_lightness
+            control.setTarget_(target); control.setAction_('action:'); ui.targets.append(target)
+        body.addArrangedSubview_(stack([self.follow_lightness, ui.label('L* (0–100):'), self.lightness_slider, self.lightness_value]))
         self.hint = ui.label(wrap=True, size=11); self.hint.setMaximumNumberOfLines_(2)
         self.plot = GamutPlot.alloc().initWithFrame_(R(0, 0, 600, 360))
         self.message = ui.label('Klicka i bilden för att välja ett färgprov.', True)
@@ -347,19 +364,34 @@ class GamutWindow:
             body.addArrangedSubview_(view); view.widthAnchor().constraintEqualToAnchor_constant_(body.widthAnchor(), -32).setActive_(True)
         self.plot.heightAnchor().constraintGreaterThanOrEqualToConstant_(300).setActive_(True)
         self.plot.setContentHuggingPriority_forOrientation_(1, A.NSLayoutConstraintOrientationVertical)
-        self.window.setMinSize_((720, 780)); self.window.center(); self.update_hint()
+        self.window.setMinSize_((720, 780)); self.window.center(); self.change_lightness()
 
     def change_projection(self, sender=None):
         self.plot.projection = self.projection.indexOfSelectedItem()
         self.plot.visible_roles = {role for role, button in zip(ROLES, self.toggles) if button.state()}
-        self.update_hint(); self.plot.setNeedsDisplay_(True)
+        self.change_lightness()
 
     def change_background(self, sender=None):
         self.plot.tint = bool(self.background.state()); self.plot.strength = self.strength.doubleValue()/100
-        self.strength.setEnabled_(self.plot.tint); self.plot.setNeedsDisplay_(True)
+        self.strength.setEnabled_(self.plot.tint); self.change_lightness()
+
+    def change_lightness(self, sender=None):
+        if sender is self.lightness_value:
+            self.lightness_slider.setDoubleValue_(min(100, max(0, sender.doubleValue())))
+        self.plot.manual_lightness = (None if self.follow_lightness.state()
+                                      else self.lightness_slider.doubleValue())
+        self.update_hint(); self.plot.setNeedsDisplay_(True)
 
     def update_hint(self):
-        self.ui.message(self.hint, 'Kulörguide: a*/b* vid originalprovets L*=%@ (annars 65). Sidovyer: b*=0 respektive a*=0. Färger utanför skärmens omfång begränsas.', f'{self.plot.lightness():.1f}')
+        top = self.plot.projection == 0
+        enabled = top and self.plot.tint
+        self.follow_lightness.setEnabled_(enabled)
+        manual = enabled and not self.follow_lightness.state()
+        self.lightness_slider.setEnabled_(manual); self.lightness_value.setEnabled_(manual)
+        value = self.plot.lightness()
+        self.lightness_value.setDoubleValue_(value)
+        if self.follow_lightness.state(): self.lightness_slider.setDoubleValue_(value)
+        self.ui.message(self.hint, 'Kulörguide: a*/b* vid L*=%@. L* 0 är svart, 100 är vitt. Sidovyer: b*=0 respektive a*=0. Endast bakgrunden ändras; konturer och färgprov är oförändrade.', f'{value:.1f}')
 
     def update(self, response):
         self.plot.update(response); self.update_hint(); ui = self.ui
@@ -816,6 +848,20 @@ class Controller:
         self.gamut.projection.selectItemAtIndex_(0); self.gamut.change_projection()
         for enabled in (False,True):
             self.gamut.background.setState_(int(enabled)); self.gamut.change_background(); self.gamut.plot.display()
+        points_before = json.dumps(self.gamut.plot.data)
+        self.gamut.follow_lightness.setState_(0)
+        for value in (0, 25, 65, 100):
+            self.gamut.lightness_slider.setDoubleValue_(value); self.gamut.change_lightness()
+            assert self.gamut.plot.lightness() == value
+            self.gamut.plot.display()
+        self.gamut.lightness_value.setDoubleValue_(42.5)
+        self.gamut.change_lightness(self.gamut.lightness_value)
+        assert self.gamut.plot.lightness() == 42.5
+        assert json.dumps(self.gamut.plot.data) == points_before
+        self.gamut.follow_lightness.setState_(1); self.gamut.change_lightness()
+        assert self.gamut.plot.lightness() == min(100, max(0, response['points'][0]['lab'][0]))
+        self.gamut.lightness_slider.setDoubleValue_(65)
+        self.gamut.follow_lightness.setState_(0); self.gamut.change_lightness()
         self.gamut.strength.setDoubleValue_(40); self.gamut.change_background()
         output = Path(self.smoke_output)
         self.save_request(str(output.with_suffix('.tif')), lambda result: self.smoke_exported(result, output))
