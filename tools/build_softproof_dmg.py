@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Christer Törnkvist <christer@borgasundsfotografiska.se>
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Build a self-contained ARM64 app and a drag-to-Applications DMG.
+"""Build separate native CPU apps and a DMG containing clearly labelled apps.
 
 Run in local-config/softproof-build/.venv after installing
  tools/requirements-softproof-build.txt. Does not modify the shared environment.
@@ -13,16 +13,26 @@ import json
 import os
 from pathlib import Path
 import plistlib
+import platform
 import shutil
 import subprocess
 import sys
 import sysconfig
 import tarfile
+from audit_softproof_architecture import audit, native_tool
 
 ROOT = Path(__file__).resolve().parents[1]
-BUILD = ROOT/'local-config/softproof-build'
+BASE_BUILD = ROOT/'local-config/softproof-build'
+BUILD = BASE_BUILD
+TARGET = platform.machine()
+LABELS = {'arm64':'Apple Silicon','x86_64':'Intel'}
 VERSION = (ROOT/'VERSION').read_text().strip()
 APP_NAME = 'InkProf Soft Proof'
+
+
+def app_path(arch):
+    return BASE_BUILD/arch/'dist'/f'{APP_NAME} - {LABELS[arch]}.app'
+
 
 
 def run(*command, **kwargs):
@@ -61,7 +71,7 @@ def notices(output):
 
 
 def icon(path):
-    from PIL import Image, ImageDraw
+    from PIL import Image, ImageDraw, ImageFont
     image = Image.new('RGBA', (1024, 1024), (0,0,0,0)); draw = ImageDraw.Draw(image)
     draw.rounded_rectangle((24,24,1000,1000), radius=220, fill='#17273d')
     for x in range(190,835):
@@ -72,6 +82,10 @@ def icon(path):
     for y in (220,415,610,805):draw.line((190,y,835,y), fill='#ffffff40', width=3)
     draw.line([(230,505),(350,310),(635,280),(795,485),(660,730),(380,755),(230,505)], fill='white',width=18,joint='curve')
     draw.ellipse((569,405,627,463),fill='#ffb04a',outline='white',width=8)
+    badge = 'ARM64' if TARGET=='arm64' else 'INTEL'
+    draw.rounded_rectangle((180,800,844,958),radius=45,fill='#17273d')
+    font=ImageFont.truetype(str(ROOT/'resources/fonts/DejaVuSans-Bold.ttf'),124)
+    draw.text((512,874),badge,font=font,fill='white',anchor='mm')
     path.parent.mkdir(parents=True,exist_ok=True)
     image.save(path, format='ICNS')
 
@@ -92,27 +106,38 @@ a = Analysis([{str(ROOT/'tools/softproof_app.py')!r}],
     hiddenimports=hidden+['softproof_engine','gamut_analysis','icc_processing','lcms_float','runtime_architecture'],
     hookspath=[], hooksconfig={{}}, runtime_hooks=[],
     excludes=['tkinter','matplotlib','scipy','cv2','pytest','IPython'], noarchive=False)
+# find_library('lcms2') can collect an unrelated Homebrew dylib.
+# The application uses Pillow's own matching liblcms2.2.dylib instead.
+a.binaries = [entry for entry in a.binaries if entry[0].split('/')[-1] != 'liblcms2.dylib']
+a.datas = [entry for entry in a.datas if entry[0].split('/')[-1] != 'liblcms2.dylib']
 pyz = PYZ(a.pure)
 exe = EXE(pyz, a.scripts, [], exclude_binaries=True, name={APP_NAME!r},
     debug=False, bootloader_ignore_signals=False, strip=False, upx=False, console=False,
-    argv_emulation=False, target_arch='arm64', codesign_identity=None, entitlements_file=None)
+    argv_emulation=False, target_arch={TARGET!r}, codesign_identity=None, entitlements_file=None)
 collection = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, name={APP_NAME!r})
-app = BUNDLE(collection, name={APP_NAME+'.app'!r}, icon={str(icon_path)!r},
-    bundle_identifier='se.inkprof.softproof', version={VERSION!r},
-    info_plist={{'CFBundleDisplayName':{APP_NAME!r},'CFBundleShortVersionString':{VERSION!r},
+app = BUNDLE(collection, name={APP_NAME+' - '+LABELS[TARGET]+'.app'!r}, icon={str(icon_path)!r},
+    bundle_identifier={'se.inkprof.softproof.'+('arm64' if TARGET=='arm64' else 'intel')!r}, version={VERSION!r},
+    info_plist={{'CFBundleDisplayName':{APP_NAME+' - '+LABELS[TARGET]!r},'CFBundleShortVersionString':{VERSION!r},
         'LSMinimumSystemVersion':'14.0','NSHighResolutionCapable':True,
         'NSHumanReadableCopyright':'Copyright (c) 2026 Christer Törnkvist <christer@borgasundsfotografiska.se>. GNU GPL version 3 or later.'}})
 ''')
     env = {**os.environ, 'MACOSX_DEPLOYMENT_TARGET':'14.0', 'PYINSTALLER_STRICT_BUNDLE_CODESIGN_ERROR':'1'}
+    if platform.machine()=='x86_64' and native_tool('lipo')[0]=='/usr/bin/arch':
+        wrappers=BUILD/'native-tools';wrappers.mkdir(parents=True,exist_ok=True)
+        for tool in ('lipo','codesign','xcrun','strip','install_name_tool'):
+            path=wrappers/tool;path.write_text('#!/bin/sh\nexec /usr/bin/arch -arm64 /usr/bin/'+tool+' "$@"\n');path.chmod(0o755)
+        env['PATH']=str(wrappers)+os.pathsep+env.get('PATH','/usr/bin:/bin')
     run(sys.executable, '-m', 'PyInstaller', '--noconfirm', '--distpath', BUILD/'dist', '--workpath', BUILD/'work', spec, env=env)
-    app = BUILD/'dist'/f'{APP_NAME}.app'
-    run('codesign','--verify','--deep','--strict',app)
+    app = app_path(TARGET)
+    run(*native_tool('codesign'),'--verify','--deep','--strict',app)
+    report=audit(app,TARGET)
+    (BUILD/'architecture-audit.json').write_text(json.dumps(report,indent=2)+'\n')
     return app
 
 
 def source_archive(destination):
     paths = ['tools/softproof_app.py','tools/softproof_engine.py','tools/icc_processing.py','tools/gamut_analysis.py',
-             'tools/runtime_architecture.py','tools/softproof.en.json','tools/build_softproof_dmg.py',
+             'tools/runtime_architecture.py','tools/softproof.en.json','tools/build_softproof_dmg.py','tools/audit_softproof_architecture.py',
              'tools/requirements-softproof-build.txt','tools/requirements-softproof.txt','analysis/lcms_float.py',
              'tests/test_softproof_engine.py','tests/test_softproof_architecture.py','docs/softproof.sv.md',
              'LICENSE','LICENSE_SCOPE.md','AUTHORS.md','README.md','VERSION','AGENTS.md','.gitignore','.gitattributes','.python-version','requirements.txt',
@@ -124,29 +149,34 @@ def source_archive(destination):
         for item in paths: archive.add(ROOT/item, arcname='InkProfSoftProof-source/'+item)
 
 
-def make_dmg(app):
-    stage = BUILD/'dmg-content'
+def make_dmg(apps):
+    stage = BASE_BUILD/'dmg-content'
     if stage.exists(): shutil.rmtree(stage)
     stage.mkdir(parents=True)
-    run('ditto',app,stage/app.name)
+    for arch, app in apps:
+        report=audit(app,arch)
+        run('ditto',app,stage/app.name)
+        (stage/f'Architecture-{LABELS[arch].replace(" ","-")}.json').write_text(json.dumps(report,indent=2)+'\n')
     (stage/'Applications').symlink_to('/Applications')
     source_archive(stage/f'InkProfSoftProof-{VERSION}-source.tar.gz')
     for name in ['LICENSE','LICENSE_SCOPE.md','AUTHORS.md','README.md']:
         shutil.copyfile(ROOT/name, stage/name)
     for name in ['InkProfSoftProof-Manual-sv.pdf','InkProfSoftProof-Manual-en.pdf']:
         shutil.copyfile(ROOT/'output/pdf'/name, stage/name)
-    (stage/'Installera - Install.txt').write_text(f'''INKPROF SOFT PROOF {VERSION} — APPLE SILICON (ARM64)
+    (stage/'Installera - Install.txt').write_text(f'''INKPROF SOFT PROOF {VERSION} — APPLE SILICON + INTEL
 macOS 14 eller senare / macOS 14 or later
 
 SVENSKA
-1. Dra InkProf Soft Proof.app till Applications (Program).
+1. Välj EN app: "Apple Silicon" för Mac med Apple-chip (M1/M2/M3 osv),
+   eller "Intel" för en Mac med Intel-processor. Dra den valda appen till Program.
 2. Mata ut skivavbilden och starta appen från Program.
 Python och bibliotek ingår; projektmappen behövs inte.
 Paketet är inte Apple-notariserat. Om macOS blockerar starten, använd
 Systeminställningar > Integritet och säkerhet > Öppna ändå för appen.
 
 ENGLISH
-1. Drag InkProf Soft Proof.app to Applications.
+1. Choose ONE app: "Apple Silicon" for a Mac with an Apple chip (M1/M2/M3 etc),
+   or "Intel" for an Intel Mac. Drag that app to Applications.
 2. Eject this disk image and open the app from Applications.
 Python and libraries are included; the project folder is not required.
 This package is not Apple-notarized. If macOS blocks the launch, use
@@ -158,7 +188,8 @@ Application and documentation: GNU GPL version 3 or later; see LICENSE.
 GitHub: https://github.com/chto0703009/InkProfSoftProof
 Dependency licenses are inside the app under Contents/Resources/Notices.
 ''')
-    dmg = BUILD/f'InkProfSoftProof-{VERSION}-arm64.dmg'
+    suffix='macos' if len(apps)==2 else apps[0][0]
+    dmg = BASE_BUILD/f'InkProfSoftProof-{VERSION}-{suffix}.dmg'
     run('hdiutil','create','-volname',f'{APP_NAME} {VERSION}','-srcfolder',stage,'-format','UDZO','-fs','HFS+','-ov',dmg)
     run('hdiutil','verify',dmg)
     checksum = hashlib.sha256(dmg.read_bytes()).hexdigest()
@@ -171,12 +202,19 @@ Dependency licenses are inside the app under Contents/Resources/Notices.
 
 
 def main():
+    global BUILD,TARGET
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--arch',choices=['arm64','x86_64'],default=platform.machine())
     parser.add_argument('--app-only',action='store_true')
     parser.add_argument('--dmg-only',action='store_true')
-    args = parser.parse_args()
-    app = BUILD/'dist'/f'{APP_NAME}.app' if args.dmg_only else build_app()
-    if not args.app_only: make_dmg(app)
+    parser.add_argument('--combined-dmg',action='store_true',help='Package the two previously built CPU apps')
+    args = parser.parse_args();TARGET=args.arch;BUILD=BASE_BUILD/TARGET
+    if args.combined_dmg:
+        make_dmg([(arch,app_path(arch)) for arch in ('arm64','x86_64')]);return
+    if platform.machine()!=TARGET and not args.dmg_only:
+        raise SystemExit('Run this build in a Python environment matching --arch')
+    app=app_path(TARGET) if args.dmg_only else build_app()
+    if not args.app_only:make_dmg([(TARGET,app)])
 
 
 if __name__ == '__main__': main()

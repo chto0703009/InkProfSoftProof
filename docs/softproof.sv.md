@@ -1,6 +1,6 @@
 # InkProf Soft Proof
 
-Handbok - version 2.1.3 - 5 november 2026
+Handbok - version 2.2.0 - 5 november 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 eller senare (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ InkProf Soft Proof jämför en bild med en beräknad simulering av dess utskrift
 
 ### Installera appen
 
-Öppna `InkProfSoftProof-2.1.3-arm64.dmg`, dra **InkProf Soft Proof.app** till **Applications / Program**, mata ut skivavbilden och starta appen från Program. Det fristående paketet är för **Apple Silicon och macOS 14 eller senare**. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
+Öppna `InkProfSoftProof-2.2.0-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar för **macOS 14 eller senare**. Apple Silicon är ARM64; Intel är x86_64. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
 
 Paketet är ad hoc-signerat men saknar Developer ID-signering och Apple-notarisering. Om macOS blockerar första starten, granska appen i **Systeminställningar > Integritet och säkerhet > Öppna ändå**. DMG-filen innehåller båda handböckerna, GPL-licensen och appens källkod.
 
@@ -127,7 +127,7 @@ Välj **Svenska** eller **English** vid **Språk / Language**. Båda fönstren, 
 
 ### ARM, Intel och Rosetta
 
-Nederst skiljer appen på datorns hårdvara, Python-processens arkitektur och direkt körning respektive Rosetta. Rosetta läses i själva Python-processen. Uppgifter som inte kan fastställas visas som **Okänd**. Klassificeringen av native ARM, native Intel och Rosetta testas; själva installationspaketet är ARM64 och verifierat på Apple Silicon.
+Nederst skiljer appen på datorns hårdvara, Python-processens arkitektur och direkt körning respektive Rosetta. Rosetta läses i själva Python-processen. Uppgifter som inte kan fastställas visas som **Okänd**. Klassificeringen av native ARM, native Intel och Rosetta testas; DMG-filen innehåller separata ARM64- och x86_64-appar med strikt kontroll av binärerna. ARM64 testas direkt; Intel testas via Rosetta på Apple Silicon, inte på en fysisk Intel-Mac.
 
 ### GPL-licens och kontakt
 

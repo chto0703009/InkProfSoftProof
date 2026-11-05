@@ -16,4 +16,4 @@ delivery. Keep headings with their following content; no orphan headings.
 The standalone installer is built with tools/build_softproof_dmg.py from
 Python source. Verify the app independently of the source checkout, include
 application source and notices, and accurately state target architecture
-and notarization status. Keep original-file overwrite protection intact.
+and notarization status. Audit every Mach-O file against the labelled CPU; do not include unrelated system/Homebrew dylibs. Keep original-file overwrite protection intact.

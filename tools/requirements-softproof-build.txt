@@ -1,4 +1,4 @@
-# Dedicated installer build environment; Python 3.13, Apple Silicon.
+# Dedicated installer build environment; Python 3.13, matching the target CPU architecture.
 altgraph==0.17.5
 macholib==1.16.4
 numpy==2.3.2

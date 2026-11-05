@@ -1,6 +1,6 @@
 # InkProf Soft Proof
 
-User guide - version 2.1.3 - 5 November 2026
+User guide - version 2.2.0 - 5 November 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 or later (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ InkProf Soft Proof compares an image with a prediction of its printed appearance
 
 ### Install the app
 
-Open `InkProfSoftProof-2.1.3-arm64.dmg`, drag **InkProf Soft Proof.app** to **Applications**, eject the disk image and launch the app from Applications. The standalone package targets **Apple Silicon and macOS 14 or later**. Python and the required libraries are included; the development project is not needed.
+Open `InkProfSoftProof-2.2.0-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps for **macOS 14 or later**. Apple Silicon is ARM64; Intel is x86_64. Install only the matching app. Python and the required libraries are included; the development project is not needed.
 
 The package is ad hoc signed, but not Developer ID signed or Apple-notarized. If macOS blocks the first launch, review it in **System Settings > Privacy & Security > Open Anyway**. The DMG includes both manuals, the GPL license and application source.
 
@@ -127,7 +127,7 @@ Select **Svenska** or **English** at **Språk / Language**. Both windows, menus,
 
 ### ARM, Intel and Rosetta
 
-The bottom status area distinguishes computer hardware, the Python process architecture and native or Rosetta execution. Rosetta is queried inside the Python process. Unavailable information is reported as **Unknown**, rather than guessed. Native ARM, native Intel and Rosetta classifications are tested; the supplied installer itself is ARM64 and has been verified on Apple Silicon.
+The bottom status area distinguishes computer hardware, the Python process architecture and native or Rosetta execution. Rosetta is queried inside the Python process. Unavailable information is reported as **Unknown**, rather than guessed. Native ARM, native Intel and Rosetta classifications are tested; the DMG contains separate ARM64 and x86_64 apps with strict binary audits. ARM64 is tested natively; Intel is tested via Rosetta on Apple Silicon, not on a physical Intel Mac.
 
 ### GPL license and contact
 

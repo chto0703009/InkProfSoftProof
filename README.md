@@ -2,16 +2,16 @@
 
 A Python macOS application for comparing ICC colour-space conversions and simulating printer/paper output. Compare the original and a soft proof side by side, lock an A/B reference, and click an image to follow a colour through the source, working and printer profiles in CIELAB D50.
 
-**Version:** 2.1.3
+**Version:** 2.2.0
 **Author:** Christer Törnkvist
 **Contact:** [christer@borgasundsfotografiska.se](mailto:christer@borgasundsfotografiska.se)
 **License:** [GNU GPL version 3 or later](LICENSE) (`GPL-3.0-or-later`). No warranty. See [license scope](LICENSE_SCOPE.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## Install
 
-The standalone installer is `InkProfSoftProof-2.1.3-arm64.dmg` for **Apple Silicon, macOS 14 or later**.
+The standalone installer is `InkProfSoftProof-2.2.0-macos.dmg` for **macOS 14 or later**. It contains two separately labelled apps, not one universal binary: **InkProf Soft Proof - Apple Silicon.app** (ARM64) and **InkProf Soft Proof - Intel.app** (x86_64).
 
-1. Open the DMG and drag **InkProf Soft Proof.app** to **Applications**.
+1. Open the DMG and drag **only the app matching your Mac** to Applications: **Apple Silicon** for an Apple-chip Mac (M1/M2/M3 etc), or **Intel** for an Intel Mac.
 2. Eject the disk image and launch the app from Applications.
 3. Open an image and select the printer/paper ICC profile.
 
@@ -49,7 +49,7 @@ Gamut outlines are convex envelopes of sampled device values projected onto a pl
 
 ## Run from source
 
-Use Python 3.13 on macOS. The supplied standalone DMG targets ARM64; architecture detection also distinguishes native Intel and Rosetta, without implying that the ARM64 installer can run on Intel hardware.
+Use Python 3.13 on macOS, matching the architecture you want to run. The DMG supplies separate ARM64 and x86_64 apps. Each app is audited to contain only its own Mach-O architecture; an unrelated Homebrew LittleCMS library is excluded. The Apple Silicon app runs natively without Rosetta. Intel testing on the build machine uses Rosetta; a physical Intel Mac has not been tested.
 
 ```sh
 python3.13 -m venv .venv
@@ -81,14 +81,21 @@ The check writes screenshots and a converted TIFF beside the requested screensho
 
 ## Rebuild the installer
 
+Build each app with a Python environment matching its CPU. On Apple Silicon, the Intel environment can run through Rosetta if installed:
+
 ```sh
-python3.13 -m venv local-config/softproof-build/.venv
-local-config/softproof-build/.venv/bin/python -m pip install \
-  -r tools/requirements-softproof-build.txt
-local-config/softproof-build/.venv/bin/python tools/build_softproof_dmg.py
+python3.13 -m venv local-config/build-arm/.venv
+local-config/build-arm/.venv/bin/python -m pip install -r tools/requirements-softproof-build.txt
+local-config/build-arm/.venv/bin/python tools/build_softproof_dmg.py --arch arm64 --app-only
+
+arch -x86_64 python3.13 -m venv local-config/build-intel/.venv
+arch -x86_64 local-config/build-intel/.venv/bin/python -m pip install -r tools/requirements-softproof-build.txt
+arch -x86_64 local-config/build-intel/.venv/bin/python tools/build_softproof_dmg.py --arch x86_64 --app-only
+
+local-config/build-arm/.venv/bin/python tools/build_softproof_dmg.py --combined-dmg
 ```
 
-The build includes Python, required libraries, notices and corresponding application source. It writes the DMG and a SHA-256 file under `local-config/softproof-build/` and copies verified copies to Downloads. Personal photographs, measurements, project data, virtual environments and Git metadata are excluded from the source archive.
+The build includes Python, required libraries, notices, architecture audit reports and corresponding application source. The audit fails if any Mach-O file has the wrong architecture. It writes the DMG and a SHA-256 file under `local-config/softproof-build/` and copies verified copies to Downloads. Personal photographs, measurements, project data, virtual environments and Git metadata are excluded from the source archive.
 
 To regenerate manuals, install `tools/requirements-docs.txt` into a documentation environment and run `tools/render_manuals.py`. Outputs are stored under `output/pdf/`; verified copies are placed in Downloads. Font notices are retained in `licenses/fonts/`.
 
