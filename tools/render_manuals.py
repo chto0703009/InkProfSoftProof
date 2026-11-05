@@ -23,6 +23,7 @@ VERSION = (ROOT/'VERSION').read_text().strip()
 OUTPUT = ROOT/'output/pdf'
 AUTHOR = 'Christer Törnkvist'
 EMAIL = 'christer@borgasundsfotografiska.se'
+GITHUB = 'https://github.com/chto0703009/InkProfSoftProof'
 NAVY = colors.HexColor('#17324d')
 TEAL = colors.HexColor('#168a9c')
 pdfmetrics.registerFont(TTFont('Guide', str(ROOT/'resources/fonts/DejaVuSans.ttf')))
@@ -106,7 +107,7 @@ def blocks(lines, language):
     output=[];index=0
     while index<len(lines):
         line=lines[index].strip()
-        if not line:index+=1;continue
+        if not line or line=='---':index+=1;continue
         if line.startswith('### '):output.append(Paragraph(markup(line[4:]),STYLES['h3']));index+=1;continue
         if line=='<!-- pipeline -->':output.append(Pipeline(language));index+=1;continue
         if line=='<!-- gamut -->':output.append(GamutIllustration(language));index+=1;continue
@@ -138,6 +139,9 @@ def render(language):
         c.drawString(42,29,f'Christer Törnkvist  |  {EMAIL}  |  GPL-3.0-or-later')
         c.drawRightString(w-42,29,str(doc.page))
         c.linkURL('mailto:'+EMAIL,(42,24,w-75,36),relative=0,thickness=0)
+        c.setFont('Guide',7)
+        c.drawString(42,16,'GitHub: '+GITHUB.removeprefix('https://'))
+        c.linkURL(GITHUB,(42,11,310,23),relative=0,thickness=0)
         c.restoreState()
     story=[]
     for index,section in enumerate(sections):
@@ -149,7 +153,7 @@ def render(language):
     reader=PdfReader(destination)
     assert len(reader.pages)==6,(language,'Unexpected pagination',len(reader.pages))
     for page in reader.pages:
-        text=page.extract_text();assert AUTHOR in text and EMAIL in text and 'GPL-3.0-or-later' in text
+        text=page.extract_text();assert AUTHOR in text and EMAIL in text and 'GPL-3.0-or-later' in text and GITHUB.removeprefix('https://') in text
     copy=Path.home()/'Downloads'/destination.name
     shutil.copyfile(destination,copy)
     assert hashlib.sha256(destination.read_bytes()).digest()==hashlib.sha256(copy.read_bytes()).digest()

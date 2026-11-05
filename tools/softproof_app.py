@@ -38,6 +38,7 @@ from runtime_architecture import detect_runtime
 APP_VERSION = (ROOT/'VERSION').read_text().strip()
 AUTHOR = 'Christer Törnkvist'
 CONTACT = 'christer@borgasundsfotografiska.se'
+GITHUB = 'https://github.com/chto0703009/InkProfSoftProof'
 
 ROLES = ('source', 'working', 'printer')
 ROLE_KEYS = ('1 Original', '2 Arbetsfärgrymd', '3 Utskrift')
@@ -543,7 +544,7 @@ class Controller:
     def show_about(self, sender=None):
         alert = A.NSAlert.alloc().init()
         alert.setMessageText_(f'InkProf Soft Proof {APP_VERSION}')
-        alert.setInformativeText_(f'Copyright (c) 2026 {AUTHOR}\n{CONTACT}\n\n'+self.ui.text('Fri programvara under GNU GPL version 3 eller senare. Programmet tillhandahålls utan garanti.'))
+        alert.setInformativeText_(f'Copyright (c) 2026 {AUTHOR}\n{CONTACT}\n{GITHUB}\n\n'+self.ui.text('Fri programvara under GNU GPL version 3 eller senare. Programmet tillhandahålls utan garanti.'))
         alert.addButtonWithTitle_(self.ui.text('Stäng'))
         alert.runModal()
 

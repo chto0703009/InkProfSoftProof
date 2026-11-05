@@ -2,14 +2,14 @@
 
 A Python macOS application for comparing ICC colour-space conversions and simulating printer/paper output. Compare the original and a soft proof side by side, lock an A/B reference, and click an image to follow a colour through the source, working and printer profiles in CIELAB D50.
 
-**Version:** 2.1.2
+**Version:** 2.1.3
 **Author:** Christer Törnkvist
 **Contact:** [christer@borgasundsfotografiska.se](mailto:christer@borgasundsfotografiska.se)
 **License:** [GNU GPL version 3 or later](LICENSE) (`GPL-3.0-or-later`). No warranty. See [license scope](LICENSE_SCOPE.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## Install
 
-The standalone installer is `InkProfSoftProof-2.1.2-arm64.dmg` for **Apple Silicon, macOS 14 or later**.
+The standalone installer is `InkProfSoftProof-2.1.3-arm64.dmg` for **Apple Silicon, macOS 14 or later**.
 
 1. Open the DMG and drag **InkProf Soft Proof.app** to **Applications**.
 2. Eject the disk image and launch the app from Applications.
@@ -18,6 +18,8 @@ The standalone installer is `InkProfSoftProof-2.1.2-arm64.dmg` for **Apple Silic
 Python and the required libraries are included. The installed app does not require this repository, Xcode or a separate Python installation. The package is ad hoc signed, but is not Developer ID signed or Apple-notarized. If macOS blocks the first launch, review the app in **System Settings > Privacy & Security > Open Anyway**.
 
 The DMG also contains the full GPL text, author/contact information, both manuals and a source archive. Dependency notices are inside the app at `Contents/Resources/Notices`.
+
+**GitHub repository:** [https://github.com/chto0703009/InkProfSoftProof](https://github.com/chto0703009/InkProfSoftProof)
 
 ## Documentation
 
@@ -95,3 +97,7 @@ To regenerate manuals, install `tools/requirements-docs.txt` into a documentatio
 Copyright (c) 2026 **Christer Törnkvist** <christer@borgasundsfotografiska.se>.
 
 This program is free software: you may redistribute and modify it under the GNU General Public License as published by the Free Software Foundation, either version 3 of the License or (at your option) any later version. It is distributed without any warranty. The unmodified full license is in [LICENSE](LICENSE). Third-party code and fonts retain their original terms.
+
+---
+
+GitHub: [chto0703009/InkProfSoftProof](https://github.com/chto0703009/InkProfSoftProof)

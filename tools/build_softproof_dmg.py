@@ -155,6 +155,7 @@ System Settings > Privacy & Security > Open Anyway for this app.
 Källkod / Source: InkProfSoftProof-{VERSION}-source.tar.gz (GPL-3.0-or-later).
 Copyright (c) 2026 Christer Törnkvist <christer@borgasundsfotografiska.se>.
 Application and documentation: GNU GPL version 3 or later; see LICENSE.
+GitHub: https://github.com/chto0703009/InkProfSoftProof
 Dependency licenses are inside the app under Contents/Resources/Notices.
 ''')
     dmg = BUILD/f'InkProfSoftProof-{VERSION}-arm64.dmg'
