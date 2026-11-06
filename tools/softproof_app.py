@@ -254,6 +254,7 @@ class GamutPlot(A.NSView):
         self.setNeedsDisplay_(True)
 
     def drawRect_(self, dirty):
+        A.NSBezierPath.bezierPathWithRect_(self.bounds()).addClip()
         A.NSColor.textBackgroundColor().setFill(); A.NSRectFill(self.bounds())
         w, h = self.bounds().size; xi, yi = AXES[self.projection]
         xmin, xmax = -self.extents[xi], self.extents[xi]
@@ -470,9 +471,12 @@ class GamutWindow:
         ui.bind(self.message, message)
         def values():
             rows = []
+            name_width=max(len(ui.text(key)) for key in ROLE_KEYS)
+            channel_width=5 if response.get('bits',8)==16 else 3
             for sample in response.get('points', []):
                 name = ui.text(ROLE_KEYS[ROLES.index(sample['role'])]); l, a, b = sample['lab']
-                rows.append(f"{name}  L* {l:6.2f}  a* {a:7.2f}  b* {b:7.2f}  ΔE76 {sample['deltaE76']:5.2f}  {sample['mode']} {sample['channels']}")
+                channels="["+", ".join(f"{v:>{channel_width}}" for v in sample['channels'])+"]"
+                rows.append(f"{name:<{name_width}}  L* {l:6.2f}  a* {a:7.2f}  b* {b:7.2f}  ΔE76 {sample['deltaE76']:6.2f}  {sample['mode']:<4} {channels}")
             return '\n'.join(rows)
         ui.bind(self.values, values)
         ui.bind(self.profiles, lambda: '\n'.join(f"{ui.text(ROLE_KEYS[ROLES.index(p['role'])])}: {p['name']}" for p in response.get('profiles', [])))
@@ -581,7 +585,8 @@ class Controller:
         self.source = popup(ui, ['Inbäddad profil (om den finns)']+names, self.settings_changed)
         self.working = popup(ui, ['Behåll bildens färgrymd']+names, self.settings_changed)
         body.addArrangedSubview_(stack([ui.label('Källprofil för bild utan profil:'), self.source, button(ui, 'Annan källprofil…', lambda _: self.choose_profile('source'))]))
-        body.addArrangedSubview_(stack([ui.label('Konvertera först till färgrymd:'), self.working, button(ui, 'Annan färgrymd…', lambda _: self.choose_profile('working'))]))
+        self.working_label=ui.label('Arbetsfärgrymd:')
+        body.addArrangedSubview_(stack([self.working_label, self.working, button(ui, 'Annan färgrymd…', lambda _: self.choose_profile('working'))]))
         self.printer_label = ui.label('Välj skrivarens och papperets ICC-profil')
         body.addArrangedSubview_(stack([button(ui, 'Välj skrivar-/pappersprofil…', lambda _: self.choose_profile('printer')), self.printer_label]))
         self.intent = popup(ui, ('Relativ kolorimetrisk', 'Absolut kolorimetrisk', 'Perceptuell'), self.settings_changed)
@@ -603,7 +608,10 @@ class Controller:
         ui.message(self.left.detail, 'Bildens färger med källprofilen'); ui.message(self.right.detail, 'Välj en bild och en skrivarprofil')
         self.left.picture.on_pick = self.right.picture.on_pick = self.pick_color
         self.save = button(ui, 'Konvertera och spara…', self.export_image); self.save.setEnabled_(False)
-        body.addArrangedSubview_(stack([self.save, button(ui, 'Färgomfång…', self.show_gamut), ui.label('Klicka i bilden för att följa en färg')]))
+        self.gamut_button=button(ui, 'Färgomfång…', self.show_gamut)
+        actions=stack([stack([self.save]),stack([self.gamut_button,ui.label('Klicka i bilden för att följa en färg')])],spacing=14)
+        actions.setDistribution_(A.NSStackViewDistributionFillEqually)
+        body.addArrangedSubview_(actions)
         self.status = ui.label('Öppna en bild. Originalfilen ändras aldrig.', True, 12)
         self.display_label = ui.label(wrap=True, size=11)
         self.runtime_label = ui.label(wrap=True, size=11)
@@ -615,7 +623,7 @@ class Controller:
         ui.bind(self.runtime_label, runtime_text)
         note = ui.label('Förhandsvisning och export: full upplösning, 8 eller 16 bitar/kanal • Pappersvitt och trycksvärta påverkar bara simuleringen', True, 11)
         for view in (self.status, self.display_label, self.runtime_label, note): body.addArrangedSubview_(view)
-        for view in (panes, self.status, self.display_label, self.runtime_label, note): view.widthAnchor().constraintEqualToAnchor_constant_(body.widthAnchor(), -32).setActive_(True)
+        for view in (panes, actions, self.status, self.display_label, self.runtime_label, note): view.widthAnchor().constraintEqualToAnchor_constant_(body.widthAnchor(), -32).setActive_(True)
         spacer = A.NSView.alloc().initWithFrame_(R(0, 0, 1, 1))
         spacer.setContentHuggingPriority_forOrientation_(1, A.NSLayoutConstraintOrientationHorizontal)
         self.quit_button = button(ui, 'Avsluta', lambda _: A.NSApplication.sharedApplication().terminate_(None))
@@ -669,8 +677,15 @@ class Controller:
         panel = A.NSOpenPanel.openPanel(); panel.setTitle_(self.ui.text(key)); panel.setPrompt_(self.ui.text('Öppna'))
         panel.setAllowsMultipleSelection_(False); panel.setCanChooseDirectories_(False)
         panel.setAllowedFileTypes_(['tif','tiff','png','jpg','jpeg'] if image else ['icc','icm'])
-        if not image: panel.setDirectoryURL_(F.NSURL.fileURLWithPath_('/Library/ColorSync/Profiles'))
-        return str(panel.URL().path()) if panel.runModal() == A.NSModalResponseOK else None
+        preference='imageDirectory' if image else 'profileDirectory'
+        remembered=self.ui.defaults.stringForKey_(preference)
+        default=Path.home()/'Desktop' if image else Path('/Library/ColorSync/Profiles')
+        directory=Path(remembered) if remembered and Path(remembered).is_dir() else default
+        panel.setDirectoryURL_(F.NSURL.fileURLWithPath_(str(directory)))
+        if panel.runModal()!=A.NSModalResponseOK: return None
+        selected=str(panel.URL().path())
+        self.ui.defaults.setObject_forKey_(str(Path(selected).parent),preference)
+        return selected
 
     def open_image(self, sender=None):
         path = self.dialog('Öppna bild', True)
@@ -720,6 +735,9 @@ class Controller:
         self.ink.setEnabled_(not self.paper.state())
         self.revisions['render'] += 1; self.revisions['gamut'] += 1
         self.ready = False; self.pin.setEnabled_(False); self.save.setEnabled_(False)
+        for kind in ('render','gamut'):
+            process=self.processes.get(kind)
+            if process and process.poll() is None: process.terminate()
         if self.gamut: self.ui.message(self.gamut.message, 'Uppdaterar profiler och färgprov…')
         if not self.path: return
         self.ui.message(self.status, 'Uppdaterar simuleringen…')
@@ -791,7 +809,7 @@ class Controller:
             self.ready = True; self.pin.setEnabled_(True); self.save.setEnabled_(bool(self.printer) and not self.exporting)
             self.update_zoom(); self.schedule_gamut()
             if self.args.smoke_test: self.smoke_rendered()
-        self.worker('render', self.request(), done)
+        self.worker('render', {**self.request(),'originalCache':str(self.temporary/'original-cache'),'renderCache':str(self.temporary/'render-cache')}, done)
 
     def update_zoom(self, sender=None):
         if not hasattr(self, 'left') or self.original is None: return
@@ -943,6 +961,10 @@ class Controller:
             assert bytes(self.reference.TIFFRepresentation()) == reference
             assert self.bpc.title() == self.ui.text('Svartpunktskompensation')
             assert self.ui.text('2 Arbetsfärgrymd') in self.gamut.values.stringValue()
+            assert self.working_label.stringValue().rstrip(':') == self.ui.text('2 Arbetsfärgrymd').split(' ',1)[1]
+            rows=self.gamut.values.stringValue().splitlines()
+            for token in ('L*','a*','b*','ΔE76'):
+                assert len({row.index(token) for row in rows}) == 1, 'Misaligned colour coordinates'
             assert self.ui.defaults.stringForKey_('language') == language
         self.gamut.plot.display()
         for enabled in (False,True):
@@ -1015,6 +1037,16 @@ class Controller:
         bitmap.representationUsingType_properties_(A.NSBitmapImageFileTypePNG,{}).writeToFile_atomically_(str(cloud_path),True)
         cloud_rgb=np.asarray(Image.open(cloud_path).convert('RGB'),dtype=int)
         assert ((cloud_rgb.max(axis=2)-cloud_rgb.min(axis=2))>40).sum()>1000, 'Cloud colours missing'
+        self.gamut.cloud.zoom=4.; self.gamut.cloud.display()
+        rep=view.bitmapImageRepForCachingDisplayInRect_(view.bounds())
+        view.cacheDisplayInRect_toBitmapImageRep_(view.bounds(),rep)
+        zoomed=np.asarray(Image.open(io.BytesIO(bytes(rep.representationUsingType_properties_(A.NSBitmapImageFileTypePNG,{})))).convert('RGB'),dtype=int)
+        rectangle=self.gamut.canvas.convertRect_toView_(self.gamut.canvas.bounds(),view)
+        scale=zoomed.shape[1]/view.bounds().size.width
+        x0=max(0,int(rectangle.origin.x*scale));x1=min(zoomed.shape[1],math.ceil((rectangle.origin.x+rectangle.size.width)*scale))
+        y0=max(0,int((view.bounds().size.height-rectangle.origin.y-rectangle.size.height)*scale));y1=min(zoomed.shape[0],math.ceil((view.bounds().size.height-rectangle.origin.y)*scale))
+        outside=np.ones(zoomed.shape[:2],dtype=bool);outside[y0:y1,x0:x1]=False
+        assert np.array_equal(zoomed[outside],cloud_rgb[outside]), '3D drawing escaped the plot frame'
         self.gamut.movement.setState_(0); self.gamut.change_cloud()
         assert self.gamut.cloud.old is None
         self.gamut.movement.setState_(1); self.gamut.change_cloud()

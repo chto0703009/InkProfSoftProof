@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """JSON worker for the Python macOS soft-proof viewer (LittleCMS via Pillow)."""
 import io
+import hashlib
+import os
+import shutil
+import tempfile
 import json
 import sys
 from pathlib import Path
@@ -69,13 +73,13 @@ def stage(image, source, working, intent, bpc):
     return process(image, source, working, profile_mode(working), intent, bpc)
 
 
-def previews(image, source, working, printer, display, intent, bpc, paper, ink=True):
+def previews(image, source, working, printer, display, intent, bpc, paper, ink=True, include_original=True):
     """Source -> working -> proof, with identical settings to saved conversion.
 
     Display is a tagged delivery space (Display P3), NOT the monitor profile.
     AppKit subsequently converts those tagged images to the current monitor.
     """
-    original = process(image, source, display, 'RGB', 1, False)
+    original = process(image, source, display, 'RGB', 1, False) if include_original else None
     staged = stage(image, source, working, intent, bpc)
     if printer is None:
         return original, process(staged, working, display, 'RGB', 1, False)
@@ -91,6 +95,32 @@ def previews(image, source, working, printer, display, intent, bpc, paper, ink=T
 
 
 def run(request):
+    render_entry=None
+    if request.get('renderCache') and request.get('action') not in ('save','gamut'):
+        inputs={k:request.get(k) for k in ('image','source','working','printer','display','intent','bpc','paper','ink','previewLimit')}
+        image_stat=Path(request['image']).stat()
+        inputs['fileIdentity']=(image_stat.st_ino,image_stat.st_size,image_stat.st_mtime_ns,image_stat.st_ctime_ns)
+        for role in ('source','working','printer','display'):
+            path=request.get(role)
+            if path and path!='srgb':
+                try: inputs[role]=hashlib.sha256(Path(path).read_bytes()).hexdigest()
+                except OSError:
+                    if role!='source': raise
+                    # Embedded ICC takes precedence over an unavailable fallback.
+                    inputs[role]='unavailable:'+str(path)
+        cache_root=Path(request['renderCache']);cache_root.mkdir(parents=True,exist_ok=True)
+        key=hashlib.sha256(json.dumps(inputs,sort_keys=True).encode()).hexdigest()
+        render_entry=cache_root/('softprof-render-'+key)
+        if render_entry.exists() and not (render_entry/'.softprof-entry').is_file():
+            raise ValueError('The preview cache directory is not owned by SoftProf.')
+        if (render_entry/'metadata.json').exists():
+            try:
+                result=json.loads((render_entry/'metadata.json').read_text())
+                output=Path(request['output']);output.mkdir(parents=True,exist_ok=True)
+                for name in ('original.png','proof.png'):shutil.copyfile(render_entry/name,output/name)
+                os.utime(render_entry,None)
+                return result
+            except (OSError,ValueError): pass
     image, source, embedded = load_image(request['image'], request.get('source'))
     working = load_profile(request['working']) if request.get('working') else source
     printer = load_profile(request['printer']) if request.get('printer') else None
@@ -120,19 +150,49 @@ def run(request):
         save_image(result, request['destination'], request['image'], image.info.get('dpi'))
         return dict(ok=True, **metadata, destination=request['destination'])
     display = load_profile(request['display'])
+    # Cache only the setting-independent original preview. Its source, delivery
+    # profile and file identity must match; conversion/export precision is intact.
+    cached=None
+    if request.get('originalCache'):
+        stat=Path(request['image']).stat()
+        key=hashlib.sha256(str((str(Path(request['image']).resolve()),stat.st_ino,stat.st_size,stat.st_mtime_ns,stat.st_ctime_ns,request.get('previewLimit',0))).encode()+source.tobytes()+display.tobytes()).hexdigest()
+        directory=Path(request['originalCache']); directory.mkdir(parents=True,exist_ok=True)
+        cached=directory/(key+'.png')
+    hit=cached is not None and cached.exists()
     # Full-resolution previews make 100% zoom actual pixel inspection.
     original, proof = previews(image, source, working, printer, display, intent, bpc,
-                               request.get('paper', False), request.get('ink', True))
+                               request.get('paper', False), request.get('ink', True),include_original=not hit)
     folder = Path(request['output'])
     folder.mkdir(parents=True, exist_ok=True)
     for name, preview in [('original', original), ('proof', proof)]:
+        if preview is None:
+            shutil.copyfile(cached,folder/'original.png'); continue
         # Convert before reducing: ICC transforms are nonlinear, so averaging
         # source pixels first can change the predicted colour.
         limit = request.get('previewLimit', 0)
         if limit > 0:
             preview.thumbnail((limit, limit), Image.Resampling.LANCZOS)
-        preview.save(folder / (name + '.png'), icc_profile=display.tobytes())
-    return dict(ok=True, **metadata, previewWidth=original.width, previewHeight=original.height)
+        preview.save(folder / (name + '.png'), icc_profile=display.tobytes(),compress_level=1)
+        if name=='original' and cached is not None:
+            fd,temporary=tempfile.mkstemp(dir=cached.parent,suffix='.tmp'); os.close(fd)
+            try:
+                shutil.copyfile(folder/'original.png',temporary);os.replace(temporary,cached)
+            finally:
+                if os.path.exists(temporary):os.unlink(temporary)
+    result=dict(ok=True, **metadata, previewWidth=proof.width, previewHeight=proof.height)
+    if render_entry is not None:
+        temporary=Path(tempfile.mkdtemp(dir=render_entry.parent,prefix='.pending-'))
+        try:
+            for name in ('original.png','proof.png'):shutil.copyfile(folder/name,temporary/name)
+            (temporary/'metadata.json').write_text(json.dumps(result))
+            (temporary/'.softprof-entry').write_text('SoftProf preview cache v1')
+            if render_entry.exists():shutil.rmtree(render_entry)
+            temporary.rename(render_entry)
+            entries=sorted((p for p in render_entry.parent.iterdir() if p.is_dir() and p.name.startswith('softprof-render-') and (p/'.softprof-entry').is_file()),key=lambda p:p.stat().st_mtime_ns,reverse=True)
+            for old in entries[6:]:shutil.rmtree(old,ignore_errors=True)
+        finally:
+            if temporary.exists():shutil.rmtree(temporary,ignore_errors=True)
+    return result
 
 
 def main():

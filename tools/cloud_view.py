@@ -79,6 +79,7 @@ class CloudPlot(A.NSView):
         return np.column_stack((w/2+xx*scale,h/2+yy*scale,depth))
 
     def drawRect_(self,dirty):
+        A.NSBezierPath.bezierPathWithRect_(self.bounds()).addClip()
         A.NSColor.colorWithWhite_alpha_(.045,1).setFill(); A.NSRectFill(self.bounds())
         def line(a,b,color,width=1):
             p=self.projected([a,b]);color.setStroke();path=A.NSBezierPath.bezierPath()

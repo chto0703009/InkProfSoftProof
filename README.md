@@ -2,14 +2,14 @@
 
 A Python macOS application for comparing ICC colour-space conversions and simulating printer/paper output. Compare the original and a soft proof side by side, lock an A/B reference, and click an image to follow a colour through the source, working and printer profiles in CIELAB D50.
 
-**Version:** 2.4.1
+**Version:** 2.4.2
 **Author:** Christer Törnkvist
 **Contact:** [christer@borgasundsfotografiska.se](mailto:christer@borgasundsfotografiska.se)
 **License:** [GNU GPL version 3 or later](LICENSE) (`GPL-3.0-or-later`). No warranty. See [license scope](LICENSE_SCOPE.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## Install
 
-Download the installer from [GitHub Releases](https://github.com/chto0703009/SoftProf/releases/latest). The file is `SoftProf-2.4.1-macos.dmg` for **Apple Silicon on macOS 14+ or Intel on macOS 13 Ventura+**. It contains two separately labelled apps, not one universal binary: **SoftProf - Apple Silicon.app** (ARM64) and **SoftProf - Intel.app** (x86_64).
+Download the installer from [GitHub Releases](https://github.com/chto0703009/SoftProf/releases/latest). The file is `SoftProf-2.4.2-macos.dmg` for **Apple Silicon on macOS 14+ or Intel on macOS 13 Ventura+**. It contains two separately labelled apps, not one universal binary: **SoftProf - Apple Silicon.app** (ARM64) and **SoftProf - Intel.app** (x86_64).
 
 1. Open the DMG and drag **only the app matching your Mac** to Applications: **Apple Silicon** for an Apple-chip Mac (M1/M2/M3 etc), or **Intel** for an Intel Mac.
 2. Eject the disk image and launch the app from Applications.

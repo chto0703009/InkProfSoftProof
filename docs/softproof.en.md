@@ -1,6 +1,6 @@
 # SoftProf
 
-User guide - version 2.4.1 - 6 November 2026
+User guide - version 2.4.2 - 6 November 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 or later (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ SoftProf compares an image with a prediction of its printed appearance. It helps
 
 ### Install the app
 
-Open `SoftProf-2.4.1-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps: **Apple Silicon requires macOS 14+; Intel requires macOS 13 Ventura+**. Apple Silicon is ARM64; Intel is x86_64. All bundled Intel binaries are checked against the Ventura deployment target. Physical Ventura hardware has not been tested here. Install only the matching app. Python and the required libraries are included; the development project is not needed.
+Open `SoftProf-2.4.2-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps: **Apple Silicon requires macOS 14+; Intel requires macOS 13 Ventura+**. Apple Silicon is ARM64; Intel is x86_64. All bundled Intel binaries are checked against the Ventura deployment target. Physical Ventura hardware has not been tested here. Install only the matching app. Python and the required libraries are included; the development project is not needed.
 
 The package is ad hoc signed, but not Developer ID signed or Apple-notarized. If macOS blocks the first launch, review it in **System Settings > Privacy & Security > Open Anyway**. The DMG includes both manuals, the GPL license and application source.
 
@@ -23,6 +23,8 @@ The package is ad hoc signed, but not Developer ID signed or Apple-notarized. If
 | Intel processor | SoftProf - Intel.app, INTEL badge |
 
 Check **Apple menu > About This Mac** if unsure. Install one app. ARM64 runs natively without Rosetta on Apple Silicon; the Intel app runs natively on an Intel Mac. Rosetta is used only in our Intel-build test on Apple Silicon.
+
+The image dialog starts on Desktop and the ICC dialog in `/Library/ColorSync/Profiles`. They then remember their last selected folders separately.
 
 ### Start with a known image
 
@@ -39,6 +41,8 @@ Use the ICC profile for the actual printer, paper, ink and driver settings. The 
 ## 2. Profiles and rendering
 
 ### Source profile and working colour space
+
+**Working space** in the main window is the same stage labelled **2 Working space** in the gamut window.
 
 An embedded ICC profile is always used as the source. For an image without a profile, select the profile that actually describes its stored values. Assigning that interpretation does not change the original file. Choosing the wrong source profile changes the meaning of every colour.
 
@@ -76,6 +80,10 @@ Choose **Lock simulation as reference** to keep result A on the left. Change pro
 
 Both views share zoom and scrolling. **Fit** shows the whole image; 25%, 50% and 100% use the original dimensions. The preview retains all pixels, so 100% no longer enlarges a reduced preview. At 100%, one image pixel maps to one backing display pixel, accounting for Retina scaling. Large images require more memory and take longer to process.
 
+Recent preview settings are cached during the session (up to six completed views). Returning to a cached setting skips source-image decoding and ICC processing. The unchanged original preview is reused, and PNG preview compression is faster but remains lossless. A new setting still requires full-resolution processing; export precision is unchanged.
+
+The **Gamut…** button is directly below the right-hand image.
+
 ### Click-to-sample
 
 Click either image to open the gamut window and follow the corresponding original pixel. A crosshair marks the location in both views. The sample is read from the original file after EXIF orientation, independently of preview reduction and zoom.
@@ -105,6 +113,8 @@ The numerical rows show L*, a*, b*, device-channel values and **ΔE76 from the o
 ### Do not use outlines as an exact gamut test
 
 Contours are convex outer envelopes of sampled ICC device values, projected onto a plane. They merge the third dimension and may overestimate concave regions. Sampling uses 17 levels per RGB/Lab channel and 9 per CMYK channel, without a separate CMYK total-ink limit. A point inside a contour does not prove that the colour is printable at its L*.
+
+L*, a*, b* and Delta E use fixed aligned columns. Plot drawing stays within its frame during zooming and window resizing.
 
 ## 5. 3D colour space
 

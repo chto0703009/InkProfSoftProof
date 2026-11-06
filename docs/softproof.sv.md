@@ -1,6 +1,6 @@
 # SoftProf
 
-Handbok - version 2.4.1 - 6 november 2026
+Handbok - version 2.4.2 - 6 november 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 eller senare (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ SoftProf jämför en bild med en beräknad simulering av dess utskrift. Du kan u
 
 ### Installera appen
 
-Öppna `SoftProf-2.4.1-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar: **Apple Silicon kräver macOS 14+; Intel kräver macOS 13 Ventura+**. Apple Silicon är ARM64; Intel är x86_64. Alla Intel-binärer kontrolleras mot Venturas systemkrav. Fysisk Ventura-maskin har inte testats här. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
+Öppna `SoftProf-2.4.2-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar: **Apple Silicon kräver macOS 14+; Intel kräver macOS 13 Ventura+**. Apple Silicon är ARM64; Intel är x86_64. Alla Intel-binärer kontrolleras mot Venturas systemkrav. Fysisk Ventura-maskin har inte testats här. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
 
 Paketet är ad hoc-signerat men saknar Developer ID-signering och Apple-notarisering. Om macOS blockerar första starten, granska appen i **Systeminställningar > Integritet och säkerhet > Öppna ändå**. DMG-filen innehåller båda handböckerna, GPL-licensen och appens källkod.
 
@@ -23,6 +23,8 @@ Paketet är ad hoc-signerat men saknar Developer ID-signering och Apple-notarise
 | Intel-processor | SoftProf - Intel.app, märkt INTEL |
 
 Kontrollera processorn i **Apple-menyn > Om den här datorn** om du är osäker. Installera en app. ARM64-appen körs direkt utan Rosetta på Apple Silicon; Intel-appen körs direkt på en Intel-Mac. Rosetta används bara i vårt test av Intel-versionen på Apple Silicon.
+
+Bilddialogen börjar på Skrivbordet och ICC-dialogen i `/Library/ColorSync/Profiles`. Därefter kommer de ihåg sina senast valda mappar var för sig.
 
 ### Börja med en känd bild
 
@@ -39,6 +41,8 @@ Välj ICC-profil för den verkliga skrivaren, papperet, bläcket och drivrutinsi
 ## 2. Profiler och återgivning
 
 ### Källprofil och arbetsfärgrymd
+
+**Arbetsfärgrymd** i huvudfönstret är samma steg som **2 Arbetsfärgrymd** i färgomfångsfönstret.
 
 En inbäddad ICC-profil används alltid som källa. För en bild utan profil väljer du den profil som verkligen beskriver bildens lagrade värden. Denna tilldelade tolkning ändrar inte originalfilen. Fel källprofil ändrar innebörden av alla färger.
 
@@ -76,6 +80,10 @@ Välj **Lås simulering som referens** för att behålla resultat A till vänste
 
 Båda vyerna har gemensam zoom och rullning. **Anpassa** visar hela bilden; 25 %, 50 % och 100 % använder originalets mått. Förhandsvisningen bevarar alla pixlar, så 100 % förstorar inte längre en reducerad bild. Vid 100 % motsvarar en bildpixel en fysisk skärmpixel, med hänsyn till Retina-skalning. Stora bilder kräver mer minne och tar längre tid att bearbeta.
 
+Nyligen använda förhandsvisningar återanvänds under sessionen (högst sex färdiga lägen). Återgång till ett sparat läge hoppar över avkodning av originalbilden och ICC-beräkning. Originalvyn återanvänds och PNG-komprimeringen är snabbare men fortfarande förlustfri. En ny inställning kräver fortfarande fullupplöst beräkning; exportens precision ändras inte.
+
+Knappen **Färgomfång…** ligger direkt under den högra bilden.
+
 ### Klicka för att välja färgprov
 
 Klicka i någon av bildvyerna för att öppna färgomfångsfönstret och följa motsvarande originalpixel. Ett hårkors markerar positionen i båda vyerna. Provet läses ur originalfilen efter eventuell EXIF-orientering, oberoende av zoom.
@@ -105,6 +113,8 @@ Sifferraderna visar L*, a*, b*, kanalvärden och **ΔE76 från originalet**. Lab
 ### Konturen är inget exakt omfångstest
 
 Konturerna är konvexa ytterhöljen av samplade ICC-enhetsvärden, projicerade till ett plan. Den tredje dimensionen sammanförs och konkava delar kan överskattas. Samplingen använder 17 nivåer per RGB-/Lab-kanal och 9 per CMYK-kanal, utan separat begränsning av totalfärg i CMYK. En punkt innanför konturen bevisar inte att färgen kan skrivas ut vid sitt L*.
+
+L*, a*, b* och ΔE visas i fasta, linjerade kolumner. Diagrammets ritning hålls inom ramen även vid zoomning och ändrad fönsterstorlek.
 
 ## 5. 3D-färgrymd och förflyttning
 

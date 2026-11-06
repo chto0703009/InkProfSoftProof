@@ -82,7 +82,7 @@ class Image16:
         else:
             if self.mode not in ('RGB','RGBA','L','LA'): raise ValueError('PNG stöder inte CMYK eller Lab. Välj TIFF.')
             import imagecodecs
-            data=imagecodecs.png_encode(self.array[:,:,0] if self.mode=='L' else self.array)
+            data=imagecodecs.png_encode(self.array[:,:,0] if self.mode=='L' else self.array,level=options.get('compress_level',6))
             def chunk(name,payload):
                 return struct.pack('>I',len(payload))+name+payload+struct.pack('>I',zlib.crc32(name+payload)&0xffffffff)
             extra=chunk(b'iCCP',b'ICC Profile\0\0'+zlib.compress(icc)) if icc else b''

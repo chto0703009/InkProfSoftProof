@@ -152,6 +152,42 @@ class SixteenBitTests(unittest.TestCase):
             cloud=colour_cloud(loaded,source,source,None,1,False)
             self.assertTrue(cloud['stages'][0]['lab'])
 
+    def test_original_preview_cache_is_independent_of_settings_and_invalidates(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);source=root/'source.tif';profile=root/'srgb.icc'
+            self.image.save(source);profile.write_bytes(self.profile.tobytes())
+            request=dict(image=str(source),display=str(profile),output=str(root/'out'),originalCache=str(root/'cache'))
+            engine.run(request)
+            before=(root/'out/original.png').read_bytes()
+            cached=next((root/'cache').glob('*.png'));stamp=cached.stat().st_mtime_ns
+            lab=ImageCms.ImageCmsProfile(ImageCms.createProfile('LAB'));labfile=root/'lab.icc';labfile.write_bytes(lab.tobytes())
+            engine.run(dict(request,working=str(labfile)))
+            self.assertEqual((root/'out/original.png').read_bytes(),before)
+            self.assertEqual(cached.stat().st_mtime_ns,stamp)
+            original,proof=engine.previews(self.image,self.profile,lab,None,self.profile,1,True,False)
+            loaded,_,_=engine.load_image(root/'out/proof.png')
+            np.testing.assert_array_equal(loaded.array,proof.array)
+            changed=self.image.copy();changed.array[:]=65535;changed.save(source)
+            engine.run(request)
+            loaded,_,_=engine.load_image(root/'out/original.png')
+            np.testing.assert_array_equal(loaded.array,changed.array)
+
+    def test_finished_render_cache_reuses_pixels_and_invalidates_settings(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);source=root/'source.tif';profile=root/'srgb.icc'
+            self.image.save(source);profile.write_bytes(self.profile.tobytes())
+            request=dict(image=str(source),display=str(profile),output=str(root/'out'),renderCache=str(root/'cache'))
+            first=engine.run(request);pixels=(root/'out/proof.png').read_bytes()
+            self.assertTrue(engine.run(dict(request,source=str(root/'missing.icc')))['embedded'])
+            with patch.object(engine,'load_image',side_effect=AssertionError('Repeated decode')):
+                self.assertEqual(engine.run(request),first)
+            self.assertEqual((root/'out/proof.png').read_bytes(),pixels)
+            with patch.object(engine,'load_image',side_effect=ValueError('Cache miss')):
+                with self.assertRaisesRegex(ValueError,'Cache miss'):engine.run(dict(request,bpc=False))
+                self.image.save(source)
+                with self.assertRaisesRegex(ValueError,'Cache miss'):engine.run(request)
+
     def test_float_input_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             path=Path(directory)/'float.tif'
