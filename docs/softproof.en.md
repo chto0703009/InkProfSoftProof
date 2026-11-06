@@ -1,6 +1,6 @@
 # SoftProf
 
-User guide - version 2.2.3 - 6 November 2026
+User guide - version 2.2.4 - 6 November 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 or later (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ SoftProf compares an image with a prediction of its printed appearance. It helps
 
 ### Install the app
 
-Open `SoftProf-2.2.3-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps for **macOS 14 or later**. Apple Silicon is ARM64; Intel is x86_64. Install only the matching app. Python and the required libraries are included; the development project is not needed.
+Open `SoftProf-2.2.4-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps for **macOS 14 or later**. Apple Silicon is ARM64; Intel is x86_64. Install only the matching app. Python and the required libraries are included; the development project is not needed.
 
 The package is ad hoc signed, but not Developer ID signed or Apple-notarized. If macOS blocks the first launch, review it in **System Settings > Privacy & Security > Open Anyway**. The DMG includes both manuals, the GPL license and application source.
 
@@ -58,7 +58,7 @@ Different intents can produce the same result when the profile does not provide 
 
 **Simulate paper white** is a separate screen-proof setting. It selects absolute colorimetric proof-to-display rendering; the selected printer conversion intent remains a separate stage. This setting affects the preview, not the saved printer pixels.
 
-The preview simulates the same 8-bit printer values as export. Black point compensation is not applied again between printer and display. Colour conversion takes place before preview downsampling; large images can therefore take longer to update. Lossy JPEG export can introduce additional changes.
+**Simulate black ink** preserves the printer profile’s predicted black. Turn it off, with paper white off, to map black to screen black. Paper-white simulation also enables black-ink simulation. These viewing choices do not change export. The preview uses the same 8-bit printer values as export; LittleCMS optimisation is disabled to avoid extra interpolation errors. JPEG export can introduce additional changes.
 
 ### Screen colour management
 
@@ -74,7 +74,7 @@ Choose **Lock simulation as reference** to keep result A on the left. Change pro
 
 ### Zoom and scroll
 
-Both views share zoom and scrolling. **Fit** shows the whole image; 25%, 50% and 100% use the original dimensions as their size reference. Preview processing is limited to 2,000 pixels on the long edge, so 100% can enlarge the reduced preview for larger originals. It is not full-resolution pixel inspection.
+Both views share zoom and scrolling. **Fit** shows the whole image; 25%, 50% and 100% use the original dimensions. The preview retains all pixels, so 100% no longer enlarges a reduced preview. At 100%, one image pixel maps to one backing display pixel, accounting for Retina scaling. Large images require more memory and take longer to process.
 
 ### Click-to-sample
 
@@ -124,9 +124,11 @@ The exported image is already converted to the printer profile. Print these valu
 
 ### Version limits
 
-The app supports one image frame and **8 bits per channel**. Export keeps full pixel dimensions, the ICC profile, DPI and supported alpha. It does not preserve all EXIF/XMP or other metadata. JPEG is lossy. Paper-white simulation is not baked into the export. The preview's 2,000-pixel limit does not reduce export dimensions.
+The app supports one image frame and **8 bits per channel**. Export keeps full pixel dimensions, the ICC profile, DPI and supported alpha. It does not preserve all EXIF/XMP or other metadata. JPEG is lossy. Paper-white simulation is not baked into the export. 16-bit RGB PNG/TIFF inputs are rejected before decoding to prevent silent precision loss. Create a separate 8-bit copy first.
 
 A successful export or small predicted ΔE is not evidence of measured print accuracy. Assess important work with a correctly prepared physical test print.
+
+A synthetic numerical comparison with Photoshop 27.11 found and corrected a dark-tone optimisation error. Remaining differences are documented in the GitHub colour-validation report. This is not a verification of Photoshop’s on-screen Proof Colors or physical print accuracy.
 
 ## 6. Language, architecture and license
 

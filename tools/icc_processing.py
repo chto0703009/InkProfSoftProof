@@ -33,7 +33,10 @@ def process(image, source, target, mode, intent, bpc, assign=False):
             raise ValueError('Källprofilens färgrymd motsvarar inte bildens kanaler.')
         if profile_mode(target) != mode:
             raise ValueError('Vald färgrymd måste motsvara målprofilens färgrymd.')
-        flags = ImageCms.Flags.BLACKPOINTCOMPENSATION if bpc else 0
+        # Avoid LCMS's extra 8-bit precomputed optimisation grid. It can
+        # introduce substantial dark-tone errors with some printer LUTs.
+        flags = ImageCms.Flags.NOOPTIMIZE
+        if bpc: flags |= ImageCms.Flags.BLACKPOINTCOMPENSATION
         result = ImageCms.profileToProfile(base, source, target, renderingIntent=intent,
                                           outputMode=mode, flags=flags)
     if alpha is not None:

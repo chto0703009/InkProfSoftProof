@@ -1,0 +1,392 @@
+{
+  "scope": "Synthetic 8-bit profile conversions; not a visual or Proof Colors screen validation",
+  "photoshop": "27.11.0",
+  "patches": 125,
+  "profiles": [
+    {
+      "description": "HFA_Eps3880_MK_GermEtching",
+      "sha256": "9090f322b5f228cd239a50cd95f2fd3b0cceae52e666aa4875d0ed693ab93bd2"
+    },
+    {
+      "description": "ISO Coated v2 (ECI)",
+      "sha256": "fed2ff3f7ed5d4310db67b19740e27b0f3eb2804b4879c581af20449f6f2da46"
+    }
+  ],
+  "cases": [
+    {
+      "profile": "HFA_Eps3880_MK_GermEtching",
+      "intent": 0,
+      "bpc": false,
+      "printer": {
+        "maxChannelDifference": 10,
+        "meanAbsoluteChannelDifference": 0.84,
+        "meanDeltaE76": 0.4834713914644566,
+        "maxDeltaE76": 1.9665567242847357
+      },
+      "proof": {
+        "normalised": {
+          "maxChannelDifference": 16,
+          "meanAbsoluteChannelDifference": 1.1253333333333333,
+          "meanDeltaE76": 1.0202418220017813,
+          "maxDeltaE76": 6.365727781932286
+        },
+        "blackInk": {
+          "maxChannelDifference": 5,
+          "meanAbsoluteChannelDifference": 0.7226666666666667,
+          "meanDeltaE76": 0.6519012984162514,
+          "maxDeltaE76": 2.442462719332399
+        },
+        "paperAndInk": {
+          "maxChannelDifference": 5,
+          "meanAbsoluteChannelDifference": 0.656,
+          "meanDeltaE76": 0.581253263592861,
+          "maxDeltaE76": 2.165926848726295
+        }
+      }
+    },
+    {
+      "profile": "HFA_Eps3880_MK_GermEtching",
+      "intent": 0,
+      "bpc": true,
+      "printer": {
+        "maxChannelDifference": 1,
+        "meanAbsoluteChannelDifference": 0.04533333333333334,
+        "meanDeltaE76": 0.040648365671204605,
+        "maxDeltaE76": 0.7926941547750966
+      },
+      "proof": {
+        "normalised": {
+          "maxChannelDifference": 5,
+          "meanAbsoluteChannelDifference": 0.448,
+          "meanDeltaE76": 0.6474312096216871,
+          "maxDeltaE76": 3.538431921133446
+        },
+        "blackInk": {
+          "maxChannelDifference": 2,
+          "meanAbsoluteChannelDifference": 0.050666666666666665,
+          "meanDeltaE76": 0.07230294833306775,
+          "maxDeltaE76": 1.3195459294383054
+        },
+        "paperAndInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.04,
+          "meanDeltaE76": 0.060020114197640785,
+          "maxDeltaE76": 0.8055029374197447
+        }
+      }
+    },
+    {
+      "profile": "HFA_Eps3880_MK_GermEtching",
+      "intent": 1,
+      "bpc": false,
+      "printer": {
+        "maxChannelDifference": 1,
+        "meanAbsoluteChannelDifference": 0.0026666666666666666,
+        "meanDeltaE76": 0.003461880006858421,
+        "maxDeltaE76": 0.43273500085730265
+      },
+      "proof": {
+        "normalised": {
+          "maxChannelDifference": 7,
+          "meanAbsoluteChannelDifference": 0.47733333333333333,
+          "meanDeltaE76": 0.618936659271635,
+          "maxDeltaE76": 3.253851038398766
+        },
+        "blackInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.013333333333333334,
+          "meanDeltaE76": 0.02735038454094906,
+          "maxDeltaE76": 0.8502197112713541
+        },
+        "paperAndInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.013333333333333334,
+          "meanDeltaE76": 0.018773769764978715,
+          "maxDeltaE76": 0.748324166551719
+        }
+      }
+    },
+    {
+      "profile": "HFA_Eps3880_MK_GermEtching",
+      "intent": 1,
+      "bpc": true,
+      "printer": {
+        "maxChannelDifference": 6,
+        "meanAbsoluteChannelDifference": 0.488,
+        "meanDeltaE76": 0.3579360974784646,
+        "maxDeltaE76": 2.222180981730904
+      },
+      "proof": {
+        "normalised": {
+          "maxChannelDifference": 12,
+          "meanAbsoluteChannelDifference": 0.5653333333333334,
+          "meanDeltaE76": 0.5669831886811975,
+          "maxDeltaE76": 5.655951153910288
+        },
+        "blackInk": {
+          "maxChannelDifference": 6,
+          "meanAbsoluteChannelDifference": 0.38666666666666666,
+          "meanDeltaE76": 0.44721044578432534,
+          "maxDeltaE76": 2.381436440396824
+        },
+        "paperAndInk": {
+          "maxChannelDifference": 6,
+          "meanAbsoluteChannelDifference": 0.34933333333333333,
+          "meanDeltaE76": 0.40054964509316415,
+          "maxDeltaE76": 2.6039095739201286
+        }
+      }
+    },
+    {
+      "profile": "HFA_Eps3880_MK_GermEtching",
+      "intent": 3,
+      "bpc": false,
+      "printer": {
+        "maxChannelDifference": 0,
+        "meanAbsoluteChannelDifference": 0.0,
+        "meanDeltaE76": 0.0,
+        "maxDeltaE76": 0.0
+      },
+      "proof": {
+        "normalised": {
+          "maxChannelDifference": 7,
+          "meanAbsoluteChannelDifference": 0.472,
+          "meanDeltaE76": 0.6220123037813609,
+          "maxDeltaE76": 3.425107367847229
+        },
+        "blackInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.005333333333333333,
+          "meanDeltaE76": 0.009123692949839824,
+          "maxDeltaE76": 0.60066028473579
+        },
+        "paperAndInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.0026666666666666666,
+          "meanDeltaE76": 0.006785382730019883,
+          "maxDeltaE76": 0.8481728412524854
+        }
+      }
+    },
+    {
+      "profile": "HFA_Eps3880_MK_GermEtching",
+      "intent": 3,
+      "bpc": true,
+      "printer": {
+        "maxChannelDifference": 0,
+        "meanAbsoluteChannelDifference": 0.0,
+        "meanDeltaE76": 0.0,
+        "maxDeltaE76": 0.0
+      },
+      "proof": {
+        "normalised": {
+          "maxChannelDifference": 7,
+          "meanAbsoluteChannelDifference": 0.472,
+          "meanDeltaE76": 0.6220123037813609,
+          "maxDeltaE76": 3.425107367847229
+        },
+        "blackInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.005333333333333333,
+          "meanDeltaE76": 0.009123692949839824,
+          "maxDeltaE76": 0.60066028473579
+        },
+        "paperAndInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.0026666666666666666,
+          "meanDeltaE76": 0.006785382730019883,
+          "maxDeltaE76": 0.8481728412524854
+        }
+      }
+    },
+    {
+      "profile": "ISO Coated v2 (ECI)",
+      "intent": 0,
+      "bpc": false,
+      "printer": {
+        "maxChannelDifference": 15,
+        "meanAbsoluteChannelDifference": 0.932,
+        "meanDeltaE76": 0.5201832266624177,
+        "maxDeltaE76": 2.425591364457
+      },
+      "proof": {
+        "normalised": {
+          "maxChannelDifference": 7,
+          "meanAbsoluteChannelDifference": 0.8613333333333333,
+          "meanDeltaE76": 0.8037430210706431,
+          "maxDeltaE76": 5.449291386578822
+        },
+        "blackInk": {
+          "maxChannelDifference": 5,
+          "meanAbsoluteChannelDifference": 0.7573333333333333,
+          "meanDeltaE76": 0.6306650135755913,
+          "maxDeltaE76": 2.395957191613171
+        },
+        "paperAndInk": {
+          "maxChannelDifference": 5,
+          "meanAbsoluteChannelDifference": 0.696,
+          "meanDeltaE76": 0.6473282712447935,
+          "maxDeltaE76": 2.76682147525011
+        }
+      }
+    },
+    {
+      "profile": "ISO Coated v2 (ECI)",
+      "intent": 0,
+      "bpc": true,
+      "printer": {
+        "maxChannelDifference": 1,
+        "meanAbsoluteChannelDifference": 0.024,
+        "meanDeltaE76": 0.02397147426631135,
+        "maxDeltaE76": 0.41474776257504
+      },
+      "proof": {
+        "normalised": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.032,
+          "meanDeltaE76": 0.05262830314779004,
+          "maxDeltaE76": 1.0623816779285782
+        },
+        "blackInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.042666666666666665,
+          "meanDeltaE76": 0.06032510182175024,
+          "maxDeltaE76": 0.8054029465087721
+        },
+        "paperAndInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.050666666666666665,
+          "meanDeltaE76": 0.10089414305629166,
+          "maxDeltaE76": 1.0173732975621692
+        }
+      }
+    },
+    {
+      "profile": "ISO Coated v2 (ECI)",
+      "intent": 1,
+      "bpc": false,
+      "printer": {
+        "maxChannelDifference": 1,
+        "meanAbsoluteChannelDifference": 0.006,
+        "meanDeltaE76": 0.005869072979474499,
+        "maxDeltaE76": 0.37097117392342316
+      },
+      "proof": {
+        "normalised": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.008,
+          "meanDeltaE76": 0.012462653311805242,
+          "maxDeltaE76": 0.529779262914862
+        },
+        "blackInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.016,
+          "meanDeltaE76": 0.03255076808359463,
+          "maxDeltaE76": 0.7934382511982325
+        },
+        "paperAndInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.010666666666666666,
+          "meanDeltaE76": 0.020120548192437273,
+          "maxDeltaE76": 0.7875914061643235
+        }
+      }
+    },
+    {
+      "profile": "ISO Coated v2 (ECI)",
+      "intent": 1,
+      "bpc": true,
+      "printer": {
+        "maxChannelDifference": 1,
+        "meanAbsoluteChannelDifference": 0.008,
+        "meanDeltaE76": 0.00447071794209103,
+        "maxDeltaE76": 0.25987820766373276
+      },
+      "proof": {
+        "normalised": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.024,
+          "meanDeltaE76": 0.036632464265115516,
+          "maxDeltaE76": 0.7024533882250003
+        },
+        "blackInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.010666666666666666,
+          "meanDeltaE76": 0.01468745065584666,
+          "maxDeltaE76": 0.6512275474855499
+        },
+        "paperAndInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.018666666666666668,
+          "meanDeltaE76": 0.031532498312080194,
+          "maxDeltaE76": 0.8391704705793748
+        }
+      }
+    },
+    {
+      "profile": "ISO Coated v2 (ECI)",
+      "intent": 3,
+      "bpc": false,
+      "printer": {
+        "maxChannelDifference": 1,
+        "meanAbsoluteChannelDifference": 0.004,
+        "meanDeltaE76": 0.003479776239900449,
+        "maxDeltaE76": 0.26098594405577547
+      },
+      "proof": {
+        "normalised": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.021333333333333333,
+          "meanDeltaE76": 0.035734622197038705,
+          "maxDeltaE76": 0.7786987498197243
+        },
+        "blackInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.005333333333333333,
+          "meanDeltaE76": 0.009738213839133227,
+          "maxDeltaE76": 0.7080988544380189
+        },
+        "paperAndInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.005333333333333333,
+          "meanDeltaE76": 0.01061395848944765,
+          "maxDeltaE76": 0.729413063058094
+        }
+      }
+    },
+    {
+      "profile": "ISO Coated v2 (ECI)",
+      "intent": 3,
+      "bpc": true,
+      "printer": {
+        "maxChannelDifference": 1,
+        "meanAbsoluteChannelDifference": 0.004,
+        "meanDeltaE76": 0.003479776239900449,
+        "maxDeltaE76": 0.26098594405577547
+      },
+      "proof": {
+        "normalised": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.021333333333333333,
+          "meanDeltaE76": 0.035734622197038705,
+          "maxDeltaE76": 0.7786987498197243
+        },
+        "blackInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.005333333333333333,
+          "meanDeltaE76": 0.009738213839133227,
+          "maxDeltaE76": 0.7080988544380189
+        },
+        "paperAndInk": {
+          "maxChannelDifference": 1,
+          "meanAbsoluteChannelDifference": 0.005333333333333333,
+          "meanDeltaE76": 0.01061395848944765,
+          "maxDeltaE76": 0.729413063058094
+        }
+      }
+    }
+  ],
+  "version": "2.2.4",
+  "date": "2026-11-06",
+  "lcmsOptimisation": false
+}

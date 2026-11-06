@@ -42,7 +42,7 @@ class ColourTests(unittest.TestCase):
             source, printer, display = root/'source.tif', root/'lab.icc', root/'srgb.icc'
             image.save(source, icc_profile=srgb.tobytes())
             printer.write_bytes(lab.tobytes()); display.write_bytes(srgb.tobytes())
-            request = dict(image=str(source), printer=str(printer), display=str(display), output=str(root/'preview'), intent=1, bpc=True)
+            request = dict(image=str(source), printer=str(printer), display=str(display), output=str(root/'preview'), previewLimit=2000, intent=1, bpc=True)
             result = engine.run(request)
             full = engine.previews(image, srgb, srgb, lab, srgb, 1, True, False)[1]
             full.thumbnail((2000,2000), Image.Resampling.LANCZOS)
@@ -50,6 +50,67 @@ class ColourTests(unittest.TestCase):
                 self.assertEqual(actual.tobytes(), full.tobytes())
                 self.assertEqual(actual.width, result['previewWidth'])
             self.assertEqual(result['width'], 2002)
+
+    def test_16bit_rgb_is_rejected_before_precision_is_lost(self):
+        import struct
+        import zlib
+        def chunk(kind, data):
+            return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind+data) & 0xffffffff)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            png = root/'rgb16.png'
+            png.write_bytes(b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', 1,1,16,2,0,0,0)) + chunk(b'IDAT', zlib.compress(b'\0'+struct.pack('>3H', 4660,22136,39612))) + chunk(b'IEND', b''))
+            # A minimal uncompressed RGB16 TIFF, independent of Pillow's writer.
+            entries = [(256,4,1,1),(257,4,1,1),(258,3,3,134),
+                       (259,3,1,1),(262,3,1,2),(273,4,1,140),
+                       (277,3,1,3),(278,4,1,1),(279,4,1,6),(284,3,1,1)]
+            tiff = root/'rgb16.tif'
+            tiff.write_bytes(b'II'+struct.pack('<HIH',42,8,len(entries))+b''.join(struct.pack('<HHII',*entry) for entry in entries)+struct.pack('<I',0)+struct.pack('<3H',16,16,16)+struct.pack('<3H',4660,22136,39612))
+            for path in (png,tiff):
+                with self.subTest(format=path.suffix):
+                    before = path.read_bytes()
+                    with self.assertRaisesRegex(ValueError, 'mer än 8 bitar'):
+                        engine.load_image(path, 'srgb')
+                    self.assertEqual(path.read_bytes(), before)
+
+    def test_default_preview_retains_full_pixel_dimensions(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); source = root/'source.png'; profile = root/'srgb.icc'
+            srgb = engine.load_profile('srgb'); profile.write_bytes(srgb.tobytes())
+            image = Image.new('RGB', (2401,3)); image.putpixel((2200,1),(211,14,82))
+            image.save(source, icc_profile=srgb.tobytes())
+            result = engine.run(dict(image=str(source), display=str(profile), output=str(root/'out')))
+            for name in ('original','proof'):
+                with Image.open(root/'out'/f'{name}.png') as preview:
+                    self.assertEqual(preview.size, image.size)
+                    self.assertEqual(preview.getpixel((2200,1)), (211,14,82))
+            self.assertEqual(result['previewWidth'], 2401)
+
+    def test_dark_gray_against_photoshop_reference(self):
+        # Photoshop 27.11 conversion of synthetic sRGB (32,32,32), relative
+        # colorimetric, BPC/dither off. Independent reference, not a second
+        # invocation of the implementation. Pin the installed ICC fixture.
+        import hashlib
+        path = Path('/Library/ColorSync/Profiles/HFA_Eps3880_MK_GermEtching.icc')
+        if not path.exists(): self.skipTest('Requires installed printer fixture')
+        expected_hash = '9090f322b5f228cd239a50cd95f2fd3b0cceae52e666aa4875d0ed693ab93bd2'
+        if hashlib.sha256(path.read_bytes()).hexdigest() != expected_hash:
+            self.skipTest('Installed ICC differs from the reference fixture')
+        source = engine.load_profile('srgb'); printer = engine.load_profile(path)
+        actual = engine.process(Image.new('RGB',(1,1),(32,32,32)),source,printer,'RGB',1,False).getpixel((0,0))
+        self.assertTrue(all(abs(a-b)<=1 for a,b in zip(actual,(1,1,7))), actual)
+
+    def test_black_ink_toggle_and_paper_dependency(self):
+        path = Path('/Library/ColorSync/Profiles/HFA_Eps3880_MK_GermEtching.icc')
+        if not path.exists(): self.skipTest('Requires installed RGB printer profile')
+        s = engine.load_profile('srgb'); p = engine.load_profile(path)
+        image = Image.new('RGB',(1,1))
+        simulated = engine.previews(image,s,s,p,s,1,True,False,True)[1]
+        normalised = engine.previews(image,s,s,p,s,1,True,False,False)[1]
+        self.assertGreater(sum(simulated.getpixel((0,0))), sum(normalised.getpixel((0,0))))
+        a = engine.previews(image,s,s,p,s,1,True,True,True)[1]
+        b = engine.previews(image,s,s,p,s,1,True,True,False)[1]
+        self.assertEqual(a.tobytes(), b.tobytes())
 
     def test_installed_printer_profiles_match_reopened_export(self):
         paths = [Path('/Library/ColorSync/Profiles/HFA_Eps3880_MK_GermEtching.icc'),
@@ -75,7 +136,7 @@ class ColourTests(unittest.TestCase):
                         _, proof = engine.previews(image, srgb, wp, printer, srgb, intent, bpc, paper)
                         # Independently reopen the actual TIFF and proof its
                         # tagged device pixels. No BPC on this viewing leg.
-                        reference = ImageCms.profileToProfile(printed, printer, srgb, renderingIntent=3 if paper else 1, outputMode='RGB', flags=0)
+                        reference = ImageCms.profileToProfile(printed, printer, srgb, renderingIntent=3 if paper else 1, outputMode='RGB', flags=ImageCms.Flags.NOOPTIMIZE)
                         self.assertEqual(proof.tobytes(), reference.tobytes())
             # A printer's nonzero black must survive the screen conversion.
             printer = engine.load_profile(paths[0])

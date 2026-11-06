@@ -445,6 +445,7 @@ class Delegate(A.NSObject):
     def applicationWillTerminate_(self, notification): self.owner.stop()
     def windowDidResize_(self, notification): self.owner.update_zoom()
     def windowDidChangeScreen_(self, notification): self.owner.screen_changed()
+    def windowDidChangeBackingProperties_(self, notification): self.owner.update_zoom()
     def windowWillClose_(self, notification):
         if self.owner.gamut is not None: self.owner.gamut.window.close()
     def synchronizeScroll_(self, notification): self.owner.synchronize_scroll(notification.object())
@@ -515,7 +516,8 @@ class Controller:
         self.intent = popup(ui, ('Relativ kolorimetrisk', 'Absolut kolorimetrisk', 'Perceptuell'), self.settings_changed)
         self.bpc = button(ui, 'Svartpunktskompensation', self.settings_changed, True); self.bpc.setState_(A.NSControlStateValueOn)
         self.paper = button(ui, 'Simulera pappersvitt', self.settings_changed, True)
-        body.addArrangedSubview_(stack([ui.label('Återgivning:'), self.intent, self.bpc, self.paper]))
+        self.ink = button(ui, 'Simulera trycksvärta', self.settings_changed, True); self.ink.setState_(A.NSControlStateValueOn)
+        body.addArrangedSubview_(stack([ui.label('Återgivning:'), self.intent, self.bpc, self.ink, self.paper]))
         self.pin = button(ui, 'Lås simulering som referens', self.pin_reference)
         self.unpin = button(ui, 'Visa original till vänster', self.clear_reference)
         self.pin.setEnabled_(False); self.unpin.setEnabled_(False)
@@ -540,7 +542,7 @@ class Controller:
             execution = ui.text({'native':'Direkt (native)', 'rosetta':'Via Rosetta (Intel på Apple Silicon)', 'unknown':'Okänd'}[self.runtime['execution']])
             return ui.text('Dator: %@ · Python: %@ · Körning: %@', host, self.runtime['process'], execution)
         ui.bind(self.runtime_label, runtime_text)
-        note = ui.label('Förhandsvisning: högst 2 000 px • Export: hela bilden, 8 bitar/kanal • Pappersvitt påverkar bara simuleringen', True, 11)
+        note = ui.label('Förhandsvisning och export: full upplösning, 8 bitar/kanal • Pappersvitt och trycksvärta påverkar bara simuleringen', True, 11)
         for view in (self.status, self.display_label, self.runtime_label, note): body.addArrangedSubview_(view)
         for view in (panes, self.status, self.display_label, self.runtime_label, note): view.widthAnchor().constraintEqualToAnchor_constant_(body.widthAnchor(), -32).setActive_(True)
         spacer = A.NSView.alloc().initWithFrame_(R(0, 0, 1, 1))
@@ -590,6 +592,7 @@ class Controller:
     def screen_changed(self):
         screen = self.window.screen() if hasattr(self, 'window') else None
         self.ui.message(self.display_label, 'Skärm: %@ · ICC-märkta Display P3-bilder visas genom macOS ColorSync.', screen.localizedName() if screen else self.ui.text('aktuell skärm'))
+        self.update_zoom()
 
     def dialog(self, key, image=False):
         panel = A.NSOpenPanel.openPanel(); panel.setTitle_(self.ui.text(key)); panel.setPrompt_(self.ui.text('Öppna'))
@@ -622,7 +625,7 @@ class Controller:
         self.settings_changed()
 
     def request(self):
-        request = dict(image=self.path, intent=(1,3,0)[self.intent.indexOfSelectedItem()], bpc=bool(self.bpc.state()), paper=bool(self.paper.state()), display=self.profile_paths['Display P3'])
+        request = dict(image=self.path, intent=(1,3,0)[self.intent.indexOfSelectedItem()], bpc=bool(self.bpc.state()), paper=bool(self.paper.state()), ink=bool(self.ink.state()) or bool(self.paper.state()), display=self.profile_paths['Display P3'])
         source, working = self.source_paths[self.source.indexOfSelectedItem()], self.working_paths[self.working.indexOfSelectedItem()]
         if source: request['source'] = source
         if working: request['working'] = working
@@ -635,9 +638,12 @@ class Controller:
         printer = Path(self.printer).name if self.printer else None
         intent = ('Relativ kolorimetrisk', 'Absolut kolorimetrisk', 'Perceptuell')[self.intent.indexOfSelectedItem()]
         bpc, paper = bool(self.bpc.state()), bool(self.paper.state())
-        return lambda: ui.text('%@ → %@\n%@ · BPC %@ · Pappersvitt %@', working or ui.text('Behåll bildens färgrymd'), printer or ui.text('Ingen skrivarprofil'), ui.text(intent), ui.text('på' if bpc else 'av'), ui.text('på' if paper else 'av'))
+        ink = bool(self.ink.state()) or paper
+        return lambda: ui.text('%@ → %@\n%@ · BPC %@ · Pappersvitt %@', working or ui.text('Behåll bildens färgrymd'), printer or ui.text('Ingen skrivarprofil'), ui.text(intent), ui.text('på' if bpc else 'av'), ui.text('på' if paper else 'av')) + ui.text(' · Trycksvärta %@', ui.text('på' if ink else 'av'))
 
     def settings_changed(self, sender=None):
+        if self.paper.state(): self.ink.setState_(A.NSControlStateValueOn)
+        self.ink.setEnabled_(not self.paper.state())
         self.revisions['render'] += 1; self.revisions['gamut'] += 1
         self.ready = False; self.pin.setEnabled_(False); self.save.setEnabled_(False)
         if self.gamut: self.ui.message(self.gamut.message, 'Uppdaterar profiler och färgprov…')
@@ -694,6 +700,9 @@ class Controller:
             self.original, self.proof = image('original.png'), image('proof.png')
             if self.original is None or self.proof is None: self.fail_smoke('Missing preview data'); return
             self.original_size = (response['width'], response['height'])
+            if self.args.smoke_test:
+                representation = self.proof.representations()[0]
+                assert (representation.pixelsWide(), representation.pixelsHigh()) == self.original_size
             source, embedded = response['source'], response['embedded']
             self.original_caption = lambda: source+' · '+self.ui.text('inbäddad källprofil' if embedded else 'tilldelad källprofil')
             self.proof_caption = caption
@@ -712,7 +721,8 @@ class Controller:
         a, b = self.left.scroll.contentView().bounds().size, self.right.scroll.contentView().bounds().size
         fit = min(a.width, b.width)/self.original_size[0]
         fit = min(fit, min(a.height,b.height)/self.original_size[1])
-        scale = (max(0.01,fit),0.25,0.5,1)[self.zoom.indexOfSelectedItem()]
+        backing = max(1, self.window.backingScaleFactor())
+        scale = (max(0.01,fit),0.25/backing,0.5/backing,1/backing)[self.zoom.indexOfSelectedItem()]
         self.left.zoom(scale); self.right.zoom(scale)
 
     def synchronize_scroll(self, clip):
@@ -806,9 +816,12 @@ class Controller:
             self.smoke_phase = 1; self.paper.setState_(1); self.bpc.setState_(0); self.intent.selectItemAtIndex_(2)
             self.settings_changed()
         elif self.smoke_phase == 1:
+            assert self.ink.state() and not self.ink.isEnabled()
             assert bytes(self.reference.TIFFRepresentation()) == self.smoke_reference
             assert bytes(self.proof.TIFFRepresentation()) != self.smoke_reference
             self.zoom.selectItemAtIndex_(3); self.update_zoom()
+            drawn = self.right.picture.image().size()
+            assert abs(drawn.width*self.window.backingScaleFactor()-self.original_size[0]) < .01
             self.left.scroll.contentView().scrollToPoint_(P(20,20))
             assert self.left.scroll.contentView().bounds().origin == self.right.scroll.contentView().bounds().origin
             self.zoom.selectItemAtIndex_(0); self.update_zoom()

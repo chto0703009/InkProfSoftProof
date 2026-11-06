@@ -1,6 +1,6 @@
 # SoftProf
 
-Handbok - version 2.2.3 - 6 november 2026
+Handbok - version 2.2.4 - 6 november 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 eller senare (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ SoftProf jämför en bild med en beräknad simulering av dess utskrift. Du kan u
 
 ### Installera appen
 
-Öppna `SoftProf-2.2.3-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar för **macOS 14 eller senare**. Apple Silicon är ARM64; Intel är x86_64. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
+Öppna `SoftProf-2.2.4-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar för **macOS 14 eller senare**. Apple Silicon är ARM64; Intel är x86_64. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
 
 Paketet är ad hoc-signerat men saknar Developer ID-signering och Apple-notarisering. Om macOS blockerar första starten, granska appen i **Systeminställningar > Integritet och säkerhet > Öppna ändå**. DMG-filen innehåller båda handböckerna, GPL-licensen och appens källkod.
 
@@ -58,7 +58,7 @@ Olika metoder kan ge samma resultat när profilen inte har skilda mappningar.
 
 **Simulera pappersvitt** är en separat skärminställning. Den väljer absolut kolorimetrisk återgivning från proofprofil till visningsrymd; konverteringsmetoden till skrivaren är ett eget led. Inställningen påverkar förhandsvisningen, inte de sparade skrivarvärdena.
 
-Förhandsvisningen simulerar samma 8-bitars skrivarvärden som exporten. Svartpunktskompensation tillämpas inte igen mellan skrivare och skärm. Färgkonverteringen görs före förminskningen; stora bilder kan därför ta längre tid att uppdatera. JPEG-export kan ge ytterligare förändringar genom förstörande komprimering.
+**Simulera trycksvärta** bevarar skrivarprofilens förutsagda svartnivå. Stäng av valet, med pappersvitt avstängt, för att mappa svart till skärmsvart. Pappersvitt aktiverar även trycksvärta. Dessa visningsval ändrar inte exporten. Förhandsvisningen använder samma 8-bitars skrivarvärden som exporten; LittleCMS optimering är avstängd för att undvika extra interpolationsfel. JPEG-export kan ge ytterligare förändringar.
 
 ### Skärmens färghantering
 
@@ -74,11 +74,11 @@ Välj **Lås simulering som referens** för att behålla resultat A till vänste
 
 ### Zoom och rullning
 
-Båda vyerna har gemensam zoom och rullning. **Anpassa** visar hela bilden; 25 %, 50 % och 100 % använder originalets mått som storleksreferens. Förhandsvisningen begränsas till 2 000 pixlar på längsta sidan. För större original kan 100 % därför förstora den reducerade bilden; det är inte pixelgranskning i full upplösning.
+Båda vyerna har gemensam zoom och rullning. **Anpassa** visar hela bilden; 25 %, 50 % och 100 % använder originalets mått. Förhandsvisningen bevarar alla pixlar, så 100 % förstorar inte längre en reducerad bild. Vid 100 % motsvarar en bildpixel en fysisk skärmpixel, med hänsyn till Retina-skalning. Stora bilder kräver mer minne och tar längre tid att bearbeta.
 
 ### Klicka för att välja färgprov
 
-Klicka i någon av bildvyerna för att öppna färgomfångsfönstret och följa motsvarande originalpixel. Ett hårkors markerar positionen i båda vyerna. Provet läses ur originalfilen efter eventuell EXIF-orientering, oberoende av zoom och förhandsvisningens nedsampling.
+Klicka i någon av bildvyerna för att öppna färgomfångsfönstret och följa motsvarande originalpixel. Ett hårkors markerar positionen i båda vyerna. Provet läses ur originalfilen efter eventuell EXIF-orientering, oberoende av zoom.
 
 Klick i en låst referens följer fortfarande originalpixeln genom de **aktuella** profilinställningarna. Referensens gamla konvertering samplas inte. Ändrade inställningar uppdaterar samma valda pixel. En ny bild rensar referensen och färgprovet.
 
@@ -124,9 +124,11 @@ Exportbilden är redan konverterad till skrivarprofilen. Skriv ut dessa värden 
 
 ### Versionens begränsningar
 
-Appen stöder en bildruta och **8 bitar per kanal**. Export bevarar hela bildens pixelmått, ICC-profil, DPI och alfa där formatet stöder det. All EXIF/XMP eller övrig metadata bevaras inte. JPEG är förstörande. Pappersvitssimuleringen bakas inte in i exporten. Förhandsvisningens gräns på 2 000 pixlar minskar inte exportens mått.
+Appen stöder en bildruta och **8 bitar per kanal**. Export bevarar hela bildens pixelmått, ICC-profil, DPI och alfa där formatet stöder det. All EXIF/XMP eller övrig metadata bevaras inte. JPEG är förstörande. Pappersvitssimuleringen bakas inte in i exporten. 16-bitars RGB i PNG/TIFF avvisas före avkodning för att undvika dold precisionsförlust. Skapa först en separat 8-bitarskopia.
 
 En lyckad export eller en liten förutsagd ΔE visar inte uppmätt utskriftsnoggrannhet. Bedöm viktiga arbeten med en korrekt förberedd fysisk provutskrift.
+
+En numerisk jämförelse med Photoshop 27.11 hittade och rättade ett optimeringsfel i mörka toner. Kvarvarande skillnader redovisas i färgkontrollrapporten på GitHub. Detta verifierar inte Photoshops korrekturvisning på skärmen eller fysisk utskriftsnoggrannhet.
 
 ## 6. Språk, arkitektur och licens
 

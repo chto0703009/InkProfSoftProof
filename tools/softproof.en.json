@@ -113,5 +113,9 @@
   "Stäng": "Close",
   "Följ färgprovets L*": "Follow sample L*",
   "L* (0–100):": "L* (0–100):",
-  "Kulörguide: a*/b* vid L*=%@. L* 0 är svart, 100 är vitt. Endast bakgrunden ändras; konturer och färgprov är oförändrade.": "Hue guide: a*/b* at L*=%@. L* 0 is black, 100 is white. Only the background changes; contours and samples stay unchanged."
+  "Kulörguide: a*/b* vid L*=%@. L* 0 är svart, 100 är vitt. Endast bakgrunden ändras; konturer och färgprov är oförändrade.": "Hue guide: a*/b* at L*=%@. L* 0 is black, 100 is white. Only the background changes; contours and samples stay unchanged.",
+  "Simulera trycksvärta": "Simulate black ink",
+  " · Trycksvärta %@": " · Black ink %@",
+  "Förhandsvisning och export: full upplösning, 8 bitar/kanal • Pappersvitt och trycksvärta påverkar bara simuleringen": "Preview and export: full resolution, 8 bits/channel • Paper white and black ink affect only the preview",
+  "Bilder med mer än 8 bitar per kanal stöds inte. Skapa en separat 8-bitarskopia först; originalet ändras inte.": "Images above 8 bits per channel are not supported. Create a separate 8-bit copy first; the original stays unchanged."
 }

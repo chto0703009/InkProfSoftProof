@@ -27,6 +27,20 @@ def load_image(path, source_path=None):
     with Image.open(path) as opened:
         if getattr(opened, 'n_frames', 1) != 1:
             raise ValueError('Bilder med flera sidor eller bildrutor stöds inte.')
+        # Pillow can expose 16-bit multichannel files as RGB after reducing
+        # their samples. Check file-level precision before decoding pixels.
+        if opened.format == 'TIFF':
+            bits = opened.tag_v2.get(258, (1,))
+            bits = (bits,) if isinstance(bits, int) else bits
+            high_depth = any(value > 8 for value in bits)
+        elif opened.format == 'PNG':
+            with open(path, 'rb') as stream:
+                header = stream.read(26)
+            high_depth = len(header) == 26 and header[24] > 8
+        else:
+            high_depth = False
+        if high_depth:
+            raise ValueError('Bilder med mer än 8 bitar per kanal stöds inte. Skapa en separat 8-bitarskopia först; originalet ändras inte.')
         if opened.mode not in ('RGB', 'RGBA', 'CMYK', 'L', 'LA', 'LAB'):
             raise ValueError('Denna version stöder 8 bitar per kanal: RGB, CMYK, gråskala eller Lab. Exportera andra bildtyper först.')
         image = ImageOps.exif_transpose(opened)
@@ -51,7 +65,7 @@ def stage(image, source, working, intent, bpc):
     return process(image, source, working, profile_mode(working), intent, bpc)
 
 
-def previews(image, source, working, printer, display, intent, bpc, paper):
+def previews(image, source, working, printer, display, intent, bpc, paper, ink=True):
     """Source -> working -> proof, with identical settings to saved conversion.
 
     Display is a tagged delivery space (Display P3), NOT the monitor profile.
@@ -65,9 +79,10 @@ def previews(image, source, working, printer, display, intent, bpc, paper):
     # A combined LCMS proof transform can select different LUT/optimisation
     # paths and does not include the exported 8-bit device quantisation.
     printed = process(staged, working, printer, profile_mode(printer), intent, bpc)
-    # BPC belongs to the device conversion. Applying it again on the display
-    # leg would remap the paper black towards screen black.
-    proof = process(printed, printer, display, 'RGB', 3 if paper else 1, False)
+    # Preserve the printer black for ink/paper simulation. When both are
+    # disabled, normalise device black to display black with viewing-leg BPC.
+    # This viewing flag is independent of BPC in the exported conversion.
+    proof = process(printed, printer, display, 'RGB', 3 if paper else 1, not (ink or paper))
     return original, proof
 
 
@@ -98,15 +113,17 @@ def run(request):
         save_image(result, request['destination'], request['image'], image.info.get('dpi'))
         return dict(ok=True, **metadata, destination=request['destination'])
     display = load_profile(request['display'])
-    # Bound computation and file sizes. Original dimensions are retained for zoom.
+    # Full-resolution previews make 100% zoom actual pixel inspection.
     original, proof = previews(image, source, working, printer, display, intent, bpc,
-                               request.get('paper', False))
+                               request.get('paper', False), request.get('ink', True))
     folder = Path(request['output'])
     folder.mkdir(parents=True, exist_ok=True)
     for name, preview in [('original', original), ('proof', proof)]:
         # Convert before reducing: ICC transforms are nonlinear, so averaging
         # source pixels first can change the predicted colour.
-        preview.thumbnail((2000, 2000), Image.Resampling.LANCZOS)
+        limit = request.get('previewLimit', 0)
+        if limit > 0:
+            preview.thumbnail((limit, limit), Image.Resampling.LANCZOS)
         preview.save(folder / (name + '.png'), icc_profile=display.tobytes())
     return dict(ok=True, **metadata, previewWidth=original.width, previewHeight=original.height)
 

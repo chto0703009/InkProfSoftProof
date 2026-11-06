@@ -142,7 +142,7 @@ def source_archive(destination):
              'tests/test_softproof_engine.py','tests/test_softproof_colour.py','tests/test_softproof_architecture.py','docs/softproof.sv.md',
              'LICENSE','LICENSE_SCOPE.md','AUTHORS.md','README.md','VERSION','AGENTS.md','.gitignore','.gitattributes','.python-version','requirements.txt',
              'THIRD_PARTY_NOTICES.md','licenses/softproof-python','licenses/fonts','resources/fonts',
-             'tools/render_manuals.py','tools/launch_softproof.py','tools/requirements-docs.txt',
+             'tools/render_manuals.py','tools/validate_photoshop.py','docs/colour-validation.md','docs/colour-validation-2.2.4.json','tools/launch_softproof.py','tools/requirements-docs.txt',
              'docs/softproof.en.md','output/pdf/SoftProf-Manual-sv.pdf','output/pdf/SoftProf-Manual-en.pdf',
              'Starta SoftProf.command']
     with tarfile.open(destination, 'w:gz') as archive:
