@@ -9,4 +9,4 @@ See LICENSE, LICENSE_SCOPE.md and THIRD_PARTY_NOTICES.md.
 
 ---
 
-GitHub: [chto0703009/InkProfSoftProof](https://github.com/chto0703009/InkProfSoftProof)
+GitHub: [chto0703009/SoftProf](https://github.com/chto0703009/SoftProf)

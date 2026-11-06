@@ -1,6 +1,6 @@
 # SoftProf
 
-Handbok - version 2.2.2 - 5 november 2026
+Handbok - version 2.2.3 - 6 november 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 eller senare (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ SoftProf jämför en bild med en beräknad simulering av dess utskrift. Du kan u
 
 ### Installera appen
 
-Öppna `SoftProf-2.2.2-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar för **macOS 14 eller senare**. Apple Silicon är ARM64; Intel är x86_64. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
+Öppna `SoftProf-2.2.3-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar för **macOS 14 eller senare**. Apple Silicon är ARM64; Intel är x86_64. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
 
 Paketet är ad hoc-signerat men saknar Developer ID-signering och Apple-notarisering. Om macOS blockerar första starten, granska appen i **Systeminställningar > Integritet och säkerhet > Öppna ändå**. DMG-filen innehåller båda handböckerna, GPL-licensen och appens källkod.
 
@@ -151,4 +151,4 @@ Appmenyn har **Om SoftProf** med namn, kontakt och licensinformation samt **Visa
 
 ---
 
-GitHub: [chto0703009/InkProfSoftProof](https://github.com/chto0703009/InkProfSoftProof)
+GitHub: [chto0703009/SoftProf](https://github.com/chto0703009/SoftProf)

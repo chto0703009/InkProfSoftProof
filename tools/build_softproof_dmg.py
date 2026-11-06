@@ -144,7 +144,7 @@ def source_archive(destination):
              'THIRD_PARTY_NOTICES.md','licenses/softproof-python','licenses/fonts','resources/fonts',
              'tools/render_manuals.py','tools/launch_softproof.py','tools/requirements-docs.txt',
              'docs/softproof.en.md','output/pdf/SoftProf-Manual-sv.pdf','output/pdf/SoftProf-Manual-en.pdf',
-             'Starta Soft proof.command']
+             'Starta SoftProf.command']
     with tarfile.open(destination, 'w:gz') as archive:
         for item in paths: archive.add(ROOT/item, arcname='SoftProf-source/'+item)
 
@@ -185,7 +185,7 @@ System Settings > Privacy & Security > Open Anyway for this app.
 Källkod / Source: SoftProf-{VERSION}-source.tar.gz (GPL-3.0-or-later).
 Copyright (c) 2026 Christer Törnkvist <christer@borgasundsfotografiska.se>.
 Application and documentation: GNU GPL version 3 or later; see LICENSE.
-GitHub: https://github.com/chto0703009/InkProfSoftProof
+GitHub: https://github.com/chto0703009/SoftProf
 Dependency licenses are inside the app under Contents/Resources/Notices.
 ''')
     suffix='macos' if len(apps)==2 else apps[0][0]

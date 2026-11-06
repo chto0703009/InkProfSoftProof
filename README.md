@@ -2,14 +2,14 @@
 
 A Python macOS application for comparing ICC colour-space conversions and simulating printer/paper output. Compare the original and a soft proof side by side, lock an A/B reference, and click an image to follow a colour through the source, working and printer profiles in CIELAB D50.
 
-**Version:** 2.2.2
+**Version:** 2.2.3
 **Author:** Christer Törnkvist
 **Contact:** [christer@borgasundsfotografiska.se](mailto:christer@borgasundsfotografiska.se)
 **License:** [GNU GPL version 3 or later](LICENSE) (`GPL-3.0-or-later`). No warranty. See [license scope](LICENSE_SCOPE.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## Install
 
-Download the installer from [GitHub Releases](https://github.com/chto0703009/InkProfSoftProof/releases/latest). The file is `SoftProf-2.2.2-macos.dmg` for **macOS 14 or later**. It contains two separately labelled apps, not one universal binary: **SoftProf - Apple Silicon.app** (ARM64) and **SoftProf - Intel.app** (x86_64).
+Download the installer from [GitHub Releases](https://github.com/chto0703009/SoftProf/releases/latest). The file is `SoftProf-2.2.3-macos.dmg` for **macOS 14 or later**. It contains two separately labelled apps, not one universal binary: **SoftProf - Apple Silicon.app** (ARM64) and **SoftProf - Intel.app** (x86_64).
 
 1. Open the DMG and drag **only the app matching your Mac** to Applications: **Apple Silicon** for an Apple-chip Mac (M1/M2/M3 etc), or **Intel** for an Intel Mac.
 2. Eject the disk image and launch the app from Applications.
@@ -27,7 +27,7 @@ Python and the required libraries are included. The installed app does not requi
 
 The DMG also contains the full GPL text, author/contact information, both manuals and a source archive. Dependency notices are inside the app at `Contents/Resources/Notices`.
 
-**GitHub repository:** [https://github.com/chto0703009/InkProfSoftProof](https://github.com/chto0703009/InkProfSoftProof)
+**GitHub repository:** [https://github.com/chto0703009/SoftProf](https://github.com/chto0703009/SoftProf)
 
 ## Documentation
 
@@ -65,7 +65,7 @@ python3.13 -m venv .venv
 .venv/bin/python tools/softproof_app.py
 ```
 
-Alternatively, double-click `Starta Soft proof.command` after creating the environment. `tools/launch_softproof.py` creates a development app launcher that uses this environment. It is separate from the self-contained installer.
+Alternatively, double-click `Starta SoftProf.command` after creating the environment. `tools/launch_softproof.py` creates a development app launcher that uses this environment. It is separate from the self-contained installer.
 
 Core modules are `tools/icc_processing.py`, `tools/softproof_engine.py`, `tools/gamut_analysis.py`, `analysis/lcms_float.py` and `tools/runtime_architecture.py`. The GUI is `tools/softproof_app.py`; presentation strings are in `tools/softproof.en.json`. No Swift source or compiler is required.
 
@@ -117,4 +117,4 @@ This program is free software: you may redistribute and modify it under the GNU 
 
 ---
 
-GitHub: [chto0703009/InkProfSoftProof](https://github.com/chto0703009/InkProfSoftProof)
+GitHub: [chto0703009/SoftProf](https://github.com/chto0703009/SoftProf)

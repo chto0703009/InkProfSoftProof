@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """SoftProf: Python application with colour-managed macOS views.
 
-PyObjC is isolated in local-config/softproof-python/vendor; the shared InkProf
+PyObjC is isolated in local-config/softproof-python/vendor; the project
 Python environment and colour engine are used without changing their packages.
 """
 from __future__ import annotations
@@ -38,7 +38,7 @@ from runtime_architecture import detect_runtime
 APP_VERSION = (ROOT/'VERSION').read_text().strip()
 AUTHOR = 'Christer Törnkvist'
 CONTACT = 'christer@borgasundsfotografiska.se'
-GITHUB = 'https://github.com/chto0703009/InkProfSoftProof'
+GITHUB = 'https://github.com/chto0703009/SoftProf'
 
 ROLES = ('source', 'working', 'printer')
 ROLE_KEYS = ('1 Original', '2 Arbetsfärgrymd', '3 Utskrift')

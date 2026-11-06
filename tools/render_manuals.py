@@ -23,7 +23,7 @@ VERSION = (ROOT/'VERSION').read_text().strip()
 OUTPUT = ROOT/'output/pdf'
 AUTHOR = 'Christer Törnkvist'
 EMAIL = 'christer@borgasundsfotografiska.se'
-GITHUB = 'https://github.com/chto0703009/InkProfSoftProof'
+GITHUB = 'https://github.com/chto0703009/SoftProf'
 NAVY = colors.HexColor('#17324d')
 TEAL = colors.HexColor('#168a9c')
 pdfmetrics.registerFont(TTFont('Guide', str(ROOT/'resources/fonts/DejaVuSans.ttf')))
