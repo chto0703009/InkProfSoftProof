@@ -1,4 +1,4 @@
-# InkProf Soft Proof
+# SoftProf
 
 A Python macOS application for comparing ICC colour-space conversions and simulating printer/paper output. Compare the original and a soft proof side by side, lock an A/B reference, and click an image to follow a colour through the source, working and printer profiles in CIELAB D50.
 
@@ -9,15 +9,15 @@ A Python macOS application for comparing ICC colour-space conversions and simula
 
 ## Install
 
-Download the installer from [GitHub Releases](https://github.com/chto0703009/InkProfSoftProof/releases/latest). The file is `InkProfSoftProof-2.2.2-macos.dmg` for **macOS 14 or later**. It contains two separately labelled apps, not one universal binary: **InkProf Soft Proof - Apple Silicon.app** (ARM64) and **InkProf Soft Proof - Intel.app** (x86_64).
+Download the installer from [GitHub Releases](https://github.com/chto0703009/InkProfSoftProof/releases/latest). The file is `SoftProf-2.2.2-macos.dmg` for **macOS 14 or later**. It contains two separately labelled apps, not one universal binary: **SoftProf - Apple Silicon.app** (ARM64) and **SoftProf - Intel.app** (x86_64).
 
 1. Open the DMG and drag **only the app matching your Mac** to Applications: **Apple Silicon** for an Apple-chip Mac (M1/M2/M3 etc), or **Intel** for an Intel Mac.
 2. Eject the disk image and launch the app from Applications.
 
 | Your Mac | App to install | Execution |
 | --- | --- | --- |
-| Apple Silicon (M1, M2, M3 and later Apple chips) | InkProf Soft Proof - Apple Silicon.app; ARM64 badge | Native ARM64, no Rosetta |
-| Intel processor | InkProf Soft Proof - Intel.app; INTEL badge | Native x86_64 on an Intel Mac |
+| Apple Silicon (M1, M2, M3 and later Apple chips) | SoftProf - Apple Silicon.app; ARM64 badge | Native ARM64, no Rosetta |
+| Intel processor | SoftProf - Intel.app; INTEL badge | Native x86_64 on an Intel Mac |
 
 Check **Apple menu > About This Mac** if you are unsure which processor you have. Choose one app; you do not need to install both. Rosetta was used to test the Intel build on the Apple Silicon development machine; it is not required to run the Intel app on an Intel Mac.
 
@@ -33,8 +33,8 @@ The DMG also contains the full GPL text, author/contact information, both manual
 
 - [English user guide (Markdown)](docs/softproof.en.md)
 - [Svensk handbok (Markdown)](docs/softproof.sv.md)
-- [English manual (PDF)](output/pdf/InkProfSoftProof-Manual-en.pdf)
-- [Svensk handbok (PDF)](output/pdf/InkProfSoftProof-Manual-sv.pdf)
+- [English manual (PDF)](output/pdf/SoftProf-Manual-en.pdf)
+- [Svensk handbok (PDF)](output/pdf/SoftProf-Manual-sv.pdf)
 
 ## Features
 
@@ -42,7 +42,7 @@ The DMG also contains the full GPL text, author/contact information, both manual
 - Working spaces: sRGB, Adobe RGB (1998), Display P3, ProPhoto RGB via the macOS ROMM RGB profile, and custom ICC files.
 - Printer/paper soft proof with relative colorimetric, absolute colorimetric or perceptual rendering, with optional black point compensation.
 - Optional paper-white simulation, A/B reference lock and linked zoom/scroll.
-- Click-to-sample gamut analysis in a*/b*, a*/L* and b*/L* projections, with approximate colour backgrounds, Lab values and channel values for each stage.
+- Click-to-sample gamut analysis in the a*/b* plane, with approximate colour backgrounds, Lab values and channel values for each stage.
 - Full-resolution TIFF/PNG/JPEG export with the selected printer ICC file embedded byte for byte; original-file overwrite protection.
 - Live Swedish/English UI, saved language preference, visible ARM/Intel/Rosetta runtime information and a Quit button at the bottom right.
 - Author, contact and GPL information in the About menu; a menu item opens the full license.

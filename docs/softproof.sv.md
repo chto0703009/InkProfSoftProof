@@ -1,4 +1,4 @@
-# InkProf Soft Proof
+# SoftProf
 
 Handbok - version 2.2.2 - 5 november 2026
 
@@ -7,11 +7,11 @@ GNU GPL version 3 eller senare (GPL-3.0-or-later).
 
 ## 1. Installera och kom igång
 
-InkProf Soft Proof jämför en bild med en beräknad simulering av dess utskrift. Du kan undersöka följderna av vald arbetsfärgrymd, skrivar-/pappersprofil, återgivningsmetod och svartpunktskompensation innan du sparar en konverterad bild.
+SoftProf jämför en bild med en beräknad simulering av dess utskrift. Du kan undersöka följderna av vald arbetsfärgrymd, skrivar-/pappersprofil, återgivningsmetod och svartpunktskompensation innan du sparar en konverterad bild.
 
 ### Installera appen
 
-Öppna `InkProfSoftProof-2.2.2-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar för **macOS 14 eller senare**. Apple Silicon är ARM64; Intel är x86_64. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
+Öppna `SoftProf-2.2.2-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar för **macOS 14 eller senare**. Apple Silicon är ARM64; Intel är x86_64. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
 
 Paketet är ad hoc-signerat men saknar Developer ID-signering och Apple-notarisering. Om macOS blockerar första starten, granska appen i **Systeminställningar > Integritet och säkerhet > Öppna ändå**. DMG-filen innehåller båda handböckerna, GPL-licensen och appens källkod.
 
@@ -19,8 +19,8 @@ Paketet är ad hoc-signerat men saknar Developer ID-signering och Apple-notarise
 
 | Dator | App och märkning |
 | --- | --- |
-| Apple Silicon, exempelvis M1, M2 eller M3 | InkProf Soft Proof - Apple Silicon.app, märkt ARM64 |
-| Intel-processor | InkProf Soft Proof - Intel.app, märkt INTEL |
+| Apple Silicon, exempelvis M1, M2 eller M3 | SoftProf - Apple Silicon.app, märkt ARM64 |
+| Intel-processor | SoftProf - Intel.app, märkt INTEL |
 
 Kontrollera processorn i **Apple-menyn > Om den här datorn** om du är osäker. Installera en app. ARM64-appen körs direkt utan Rosetta på Apple Silicon; Intel-appen körs direkt på en Intel-Mac. Rosetta används bara i vårt test av Intel-versionen på Apple Silicon.
 
@@ -88,7 +88,7 @@ Färgomfångsfönstret redovisar källvärden, arbetsfärgrymd och förväntade 
 
 ## 4. Läs färgomfångsdiagrammet
 
-Alla profiler jämförs i **CIELAB D50**. Välj a*/b* ovanifrån, a*/L* framifrån eller b*/L* från sidan. Axelvärdena har samma skala per enhet och utvidgas vid behov utan att krympa när du ändrar inställningar.
+Alla profiler jämförs i **CIELAB D50**. Diagrammet visar a*/b*-planet ovanifrån. Axelvärdena har samma skala per enhet och utvidgas vid behov utan att krympa när du ändrar inställningar.
 
 <!-- gamut -->
 
@@ -100,7 +100,7 @@ Sifferraderna visar L*, a*, b*, kanalvärden och **ΔE76 från originalet**. Lab
 
 ### Ungefärligt färgad bakgrund
 
-**Färgtonad bakgrund** ger en kulörguide; **Styrka** justerar tydligheten. I a*/b* kan du avmarkera **Följ färgprovets L*** och välja bakgrundens ljushet från **0 till 100** med reglaget eller sifferfältet (tryck Retur). L* 0 är svart och 100 är vitt. Markera valet för att följa originalprovets L*, eller 65 innan ett prov valts. Bara bakgrunden ändras, inte färgprov, konturer eller export. L*-reglaget är inaktivt i sidovyerna, där ljushet redan är en axel. Sidovyerna håller b*=0 respektive a*=0. Det är färgade snitt bakom projicerade konturer, inte en mätning av alla färger i projektionen. Skärmens begränsningar och toningen gör bakgrunden approximativ.
+**Färgtonad bakgrund** ger en kulörguide; **Styrka** justerar tydligheten. Avmarkera **Följ färgprovets L*** för att välja bakgrundens ljushet från **0 till 100** med reglaget eller sifferfältet (tryck Retur). L* 0 är svart och 100 är vitt. Markera valet för att följa originalprovets L*, eller 65 innan ett prov valts. Bara bakgrunden ändras, inte färgprov, konturer eller export. Bakgrunden är ett färgat snitt vid vald L* bakom de projicerade konturerna, inte en mätning av alla färger i projektionen. Skärmens begränsningar och toningen gör bakgrunden approximativ.
 
 ### Konturen är inget exakt omfångstest
 
@@ -147,7 +147,7 @@ E-post: **christer@borgasundsfotografiska.se**.
 
 Programmet och dokumentationen är fri programvara under **GNU General Public License, version 3 eller valfri senare version** (GPL-3.0-or-later). De tillhandahålls utan garanti. Den fullständiga, oförändrade licensen finns i **LICENSE**. Tredjepartskod, systemresurser och typsnitt behåller sina egna villkor; se **LICENSE_SCOPE.md** och **THIRD_PARTY_NOTICES.md**.
 
-Appmenyn har **Om InkProf Soft Proof** med namn, kontakt och licensinformation samt **Visa GPL-licensen** som öppnar hela texten. DMG-filen innehåller appens källkod, byggverktyg och båda handböckerna. README på engelska beskriver källkodsinstallation, tester och hur DMG-paketet byggs om. Personliga fotografier, mätningar och lokala Python-miljöer ingår inte i Git-repositoryn eller källkodsarkivet.
+Appmenyn har **Om SoftProf** med namn, kontakt och licensinformation samt **Visa GPL-licensen** som öppnar hela texten. DMG-filen innehåller appens källkod, byggverktyg och båda handböckerna. README på engelska beskriver källkodsinstallation, tester och hur DMG-paketet byggs om. Personliga fotografier, mätningar och lokala Python-miljöer ingår inte i Git-repositoryn eller källkodsarkivet.
 
 ---
 

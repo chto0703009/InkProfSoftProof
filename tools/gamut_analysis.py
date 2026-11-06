@@ -19,7 +19,7 @@ if not getattr(sys, 'frozen', False):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'analysis'))
 from lcms_float import LittleCMS, LAB_DBL
 
-PROJECTIONS = ((1, 2), (1, 0), (2, 0))
+PROJECTIONS = ((1, 2),)  # a*/b* seen from above
 
 
 def lab_values(profile, values):
@@ -82,7 +82,7 @@ def convex_envelope(points):
 
 
 def profile_gamut(profile, cache=None):
-    key = hashlib.sha256(b'gamut-v1-absolute-grid' + profile.tobytes()).hexdigest()
+    key = hashlib.sha256(b'gamut-v2-absolute-grid-ab' + profile.tobytes()).hexdigest()
     path = Path(cache) / (key + '.json') if cache else None
     if path and path.exists():
         return json.loads(path.read_text())

@@ -1,4 +1,4 @@
-# InkProf Soft Proof working preferences
+# SoftProf working preferences
 
 Keep GPL-3.0-or-later declarations and the author/contact details:
 Christer Törnkvist <christer@borgasundsfotografiska.se>.

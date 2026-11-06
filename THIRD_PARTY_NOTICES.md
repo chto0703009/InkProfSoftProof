@@ -1,6 +1,6 @@
 # Third-party notices
 
-InkProf Soft Proof is copyright (c) 2026 Christer Törnkvist,
+SoftProf is copyright (c) 2026 Christer Törnkvist,
 christer@borgasundsfotografiska.se, and licensed under GPL-3.0-or-later.
 The full license is in LICENSE. Dependencies keep their own licenses.
 

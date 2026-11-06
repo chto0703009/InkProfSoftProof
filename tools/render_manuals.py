@@ -127,13 +127,13 @@ def render(language):
     data=(ROOT/f'docs/softproof.{language}.md').read_text()
     sections=re.split(r'^## ',data,flags=re.MULTILINE)[1:]
     label='HANDBOK / SV' if language=='sv' else 'USER GUIDE / EN'
-    destination=OUTPUT/f'InkProfSoftProof-Manual-{language}.pdf'
+    destination=OUTPUT/f'SoftProf-Manual-{language}.pdf'
     document=SimpleDocTemplate(str(destination),pagesize=A4,leftMargin=42,rightMargin=42,topMargin=74,bottomMargin=51,
-                              title=f'InkProf Soft Proof {VERSION} - '+('Handbok' if language=='sv' else 'User guide'),author=f'{AUTHOR} <{EMAIL}>',subject='GPL-3.0-or-later; ICC soft proof and gamut analysis')
+                              title=f'SoftProf {VERSION} - '+('Handbok' if language=='sv' else 'User guide'),author=f'{AUTHOR} <{EMAIL}>',subject='GPL-3.0-or-later; ICC soft proof and gamut analysis')
     def furniture(c,doc):
         c.saveState();w,h=A4
-        c.setFillColor(NAVY);c.setFont('GuideBold',10);c.drawString(42,h-31,'INKPROF SOFT PROOF')
-        c.setFont('Guide',8);c.drawRightString(w-42,h-31,f'{VERSION}  |  {label}  |  2026-11-05')
+        c.setFillColor(NAVY);c.setFont('GuideBold',10);c.drawString(42,h-31,'SOFTPROF')
+        c.setFont('Guide',8);c.drawRightString(w-42,h-31,f'{VERSION}  |  {label}  |  2026-11-06')
         c.setStrokeColor(TEAL);c.setLineWidth(2);c.line(42,h-43,w-42,h-43)
         c.setFont('Guide',7.2);c.setFillColor(NAVY)
         c.drawString(42,29,f'Christer Törnkvist  |  {EMAIL}  |  GPL-3.0-or-later')

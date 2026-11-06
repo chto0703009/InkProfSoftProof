@@ -1,4 +1,4 @@
-# InkProf Soft Proof
+# SoftProf
 
 User guide - version 2.2.2 - 5 November 2026
 
@@ -7,11 +7,11 @@ GNU GPL version 3 or later (GPL-3.0-or-later).
 
 ## 1. Install and get started
 
-InkProf Soft Proof compares an image with a prediction of its printed appearance. It helps you explore the consequences of a working colour space, printer/paper ICC profile, rendering intent and black point compensation before exporting a converted image.
+SoftProf compares an image with a prediction of its printed appearance. It helps you explore the consequences of a working colour space, printer/paper ICC profile, rendering intent and black point compensation before exporting a converted image.
 
 ### Install the app
 
-Open `InkProfSoftProof-2.2.2-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps for **macOS 14 or later**. Apple Silicon is ARM64; Intel is x86_64. Install only the matching app. Python and the required libraries are included; the development project is not needed.
+Open `SoftProf-2.2.2-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps for **macOS 14 or later**. Apple Silicon is ARM64; Intel is x86_64. Install only the matching app. Python and the required libraries are included; the development project is not needed.
 
 The package is ad hoc signed, but not Developer ID signed or Apple-notarized. If macOS blocks the first launch, review it in **System Settings > Privacy & Security > Open Anyway**. The DMG includes both manuals, the GPL license and application source.
 
@@ -19,8 +19,8 @@ The package is ad hoc signed, but not Developer ID signed or Apple-notarized. If
 
 | Computer | App and badge |
 | --- | --- |
-| Apple Silicon, such as M1, M2 or M3 | InkProf Soft Proof - Apple Silicon.app, ARM64 badge |
-| Intel processor | InkProf Soft Proof - Intel.app, INTEL badge |
+| Apple Silicon, such as M1, M2 or M3 | SoftProf - Apple Silicon.app, ARM64 badge |
+| Intel processor | SoftProf - Intel.app, INTEL badge |
 
 Check **Apple menu > About This Mac** if unsure. Install one app. ARM64 runs natively without Rosetta on Apple Silicon; the Intel app runs natively on an Intel Mac. Rosetta is used only in our Intel-build test on Apple Silicon.
 
@@ -88,7 +88,7 @@ The gamut window reports source, working-space and predicted printer values. RGB
 
 ## 4. Read the gamut diagram
 
-All profiles are compared in **CIELAB D50**. Choose a*/b* for a top view, a*/L* for a front view, or b*/L* for a side view. Axis units use a common scale, expanding when necessary without shrinking as settings change.
+All profiles are compared in **CIELAB D50**. The diagram shows the a*/b* plane from above. Axis units use a common scale, expanding when necessary without shrinking as settings change.
 
 <!-- gamut -->
 
@@ -100,7 +100,7 @@ The numerical rows show L*, a*, b*, device-channel values and **ΔE76 from the o
 
 ### Approximate colour background
 
-**Colour-tinted background** supplies a hue guide; **Strength** adjusts its visibility. In a*/b*, turn off **Follow sample L*** to choose background lightness from **0 to 100** with the slider or numeric field (press Enter). L* 0 is black and 100 is white. Turn it on to follow the original sample's L*, or 65 before selection. This changes only the approximate background, not samples, contours or export. The L* control is disabled in side views, where lightness is already an axis. The side views hold b*=0 or a*=0. These are coloured slices behind projected contours, not a measurement of all colours in that projection. Display clipping and tinting make the background approximate.
+**Colour-tinted background** supplies a hue guide; **Strength** adjusts its visibility. Turn off **Follow sample L*** to choose background lightness from **0 to 100** with the slider or numeric field (press Enter). L* 0 is black and 100 is white. Turn it on to follow the original sample's L*, or 65 before selection. This changes only the approximate background, not samples, contours or export. The background is a coloured slice at the chosen L* behind the projected contours, not a measurement of all colours in that projection. Display clipping and tinting make the background approximate.
 
 ### Do not use outlines as an exact gamut test
 
@@ -147,7 +147,7 @@ Email: **christer@borgasundsfotografiska.se**.
 
 The application and documentation are free software under the **GNU General Public License, version 3 or any later version** (GPL-3.0-or-later). They are provided without warranty. The full unmodified license is in **LICENSE**. Third-party code, system resources and fonts retain their own terms; see **LICENSE_SCOPE.md** and **THIRD_PARTY_NOTICES.md**.
 
-The app menu offers **About InkProf Soft Proof** with author, contact and license information, and **View the GPL license** opens the full text. The DMG includes application source, build tools and both manuals. The English README explains source installation, tests and rebuilding the DMG. No personal photographs, measurements or local virtual environments are included in the Git repository or source archive.
+The app menu offers **About SoftProf** with author, contact and license information, and **View the GPL license** opens the full text. The DMG includes application source, build tools and both manuals. The English README explains source installation, tests and rebuilding the DMG. No personal photographs, measurements or local virtual environments are included in the Git repository or source archive.
 
 ---
 

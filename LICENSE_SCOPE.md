@@ -2,7 +2,7 @@
 
 Copyright (c) 2026 Christer Törnkvist <christer@borgasundsfotografiska.se>.
 
-InkProf Soft Proof application source, tests, build tools, documentation,
+SoftProf application source, tests, build tools, documentation,
 configuration and generated explanatory graphics are licensed under the GNU
 General Public License, version 3 or (at your option) any later version.
 SPDX: **GPL-3.0-or-later**. The complete, unmodified license text is in LICENSE.

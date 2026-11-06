@@ -121,11 +121,11 @@ class GamutTests(unittest.TestCase):
         self.assertEqual(result['points'][2]['channels'], list(printed.getpixel((0,0))))
         self.assertTrue(all(len(p['lab']) == 3 for p in result['points']))
 
-    def test_profile_cache_and_three_projections(self):
+    def test_profile_cache_and_ab_projection(self):
         with tempfile.TemporaryDirectory() as cache:
             first = self.gamut.profile_gamut(self.srgb, cache)
             self.assertEqual(first['count'], 17**3)
-            self.assertEqual(len(first['projections']), 3)
+            self.assertEqual(len(first['projections']), 1)
             self.assertTrue(all(len(p)>2 for p in first['projections']))
             with patch.object(self.gamut, 'lab_values', side_effect=AssertionError('Cache miss')):
                 self.assertEqual(self.gamut.profile_gamut(self.srgb, cache), first)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Christer Törnkvist <christer@borgasundsfotografiska.se>
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""InkProf Soft proof: Python application with colour-managed macOS views.
+"""SoftProf: Python application with colour-managed macOS views.
 
 PyObjC is isolated in local-config/softproof-python/vendor; the shared InkProf
 Python environment and colour engine are used without changing their packages.
@@ -43,7 +43,7 @@ GITHUB = 'https://github.com/chto0703009/InkProfSoftProof'
 ROLES = ('source', 'working', 'printer')
 ROLE_KEYS = ('1 Original', '2 Arbetsfärgrymd', '3 Utskrift')
 COLORS = (A.NSColor.systemBlueColor(), A.NSColor.systemOrangeColor(), A.NSColor.systemPurpleColor())
-AXES = ((1, 2), (1, 0), (2, 0))
+AXES = ((1, 2),)
 ACTIVE = None
 
 
@@ -326,13 +326,12 @@ class GamutWindow:
         self.owner, self.ui = controller, controller.ui
         ui = self.ui
         self.window = make_window(820, 820); self.window.setReleasedWhenClosed_(False)
-        ui.bind(self.window, lambda: ui.text('InkProf · Färgomfång och färgprov'), 'setTitle_')
+        ui.bind(self.window, lambda: ui.text('SoftProf · Färgomfång och färgprov'), 'setTitle_')
         body = make_body(self.window)
         body.addArrangedSubview_(ui.label('Färgens väg genom profilerna · CIELAB D50', size=18))
-        self.projection = popup(ui, ('a* / b* — ovanifrån','a* / L* — framifrån','b* / L* — från sidan'), self.change_projection)
-        self.toggles = [button(ui, key, self.change_projection, True) for key in ROLE_KEYS]
+        self.toggles = [button(ui, key, self.change_roles, True) for key in ROLE_KEYS]
         for toggle, color in zip(self.toggles, COLORS): toggle.setState_(A.NSControlStateValueOn); toggle.setContentTintColor_(color)
-        body.addArrangedSubview_(stack([self.projection, *self.toggles], spacing=14))
+        body.addArrangedSubview_(stack(self.toggles, spacing=14))
         self.background = button(ui, 'Färgtonad bakgrund', self.change_background, True); self.background.setState_(A.NSControlStateValueOn)
         self.strength = A.NSSlider.sliderWithValue_minValue_maxValue_target_action_(50, 10, 100, None, None)
         target = Action.alloc().init(); target.callback = self.change_background
@@ -359,15 +358,14 @@ class GamutWindow:
         self.values = ui.label(wrap=True, size=12); self.values.setFont_(A.NSFont.monospacedSystemFontOfSize_weight_(12, A.NSFontWeightRegular))
         self.values.setMaximumNumberOfLines_(5)
         self.profiles = ui.label(wrap=True, size=11); self.profiles.setMaximumNumberOfLines_(3)
-        note = ui.label('Konturer: ungefärliga konvexa ytterhöljen av samplade ICC-värden, projicerade till valt plan. De visar inte exakt om en färg ryms. Grå ringar: föregående inställning för samma pixel. Lab-punkterna visar profilernas absoluta D50-värden; skärm och pappersvitssimulering ingår inte.', True, 11)
+        note = ui.label('Konturer: ungefärliga konvexa ytterhöljen av samplade ICC-värden, projicerade på a*/b*-planet. De visar inte exakt om en färg ryms. Grå ringar: föregående inställning för samma pixel. Lab-punkterna visar profilernas absoluta D50-värden; skärm och pappersvitssimulering ingår inte.', True, 11)
         for view in (self.hint, self.plot, self.message, self.values, self.profiles, note):
             body.addArrangedSubview_(view); view.widthAnchor().constraintEqualToAnchor_constant_(body.widthAnchor(), -32).setActive_(True)
         self.plot.heightAnchor().constraintGreaterThanOrEqualToConstant_(300).setActive_(True)
         self.plot.setContentHuggingPriority_forOrientation_(1, A.NSLayoutConstraintOrientationVertical)
         self.window.setMinSize_((720, 780)); self.window.center(); self.change_lightness()
 
-    def change_projection(self, sender=None):
-        self.plot.projection = self.projection.indexOfSelectedItem()
+    def change_roles(self, sender=None):
         self.plot.visible_roles = {role for role, button in zip(ROLES, self.toggles) if button.state()}
         self.change_lightness()
 
@@ -383,15 +381,14 @@ class GamutWindow:
         self.update_hint(); self.plot.setNeedsDisplay_(True)
 
     def update_hint(self):
-        top = self.plot.projection == 0
-        enabled = top and self.plot.tint
+        enabled = self.plot.tint
         self.follow_lightness.setEnabled_(enabled)
         manual = enabled and not self.follow_lightness.state()
         self.lightness_slider.setEnabled_(manual); self.lightness_value.setEnabled_(manual)
         value = self.plot.lightness()
         self.lightness_value.setDoubleValue_(value)
         if self.follow_lightness.state(): self.lightness_slider.setDoubleValue_(value)
-        self.ui.message(self.hint, 'Kulörguide: a*/b* vid L*=%@. L* 0 är svart, 100 är vitt. Sidovyer: b*=0 respektive a*=0. Endast bakgrunden ändras; konturer och färgprov är oförändrade.', f'{value:.1f}')
+        self.ui.message(self.hint, 'Kulörguide: a*/b* vid L*=%@. L* 0 är svart, 100 är vitt. Endast bakgrunden ändras; konturer och färgprov är oförändrade.', f'{value:.1f}')
 
     def update(self, response):
         self.plot.update(response); self.update_hint(); ui = self.ui
@@ -457,7 +454,7 @@ class Controller:
     def __init__(self, args):
         self.args, self.ui = args, UI()
         self.runtime = detect_runtime()
-        self.temporary = Path(tempfile.mkdtemp(prefix='InkProf-Python-'))
+        self.temporary = Path(tempfile.mkdtemp(prefix='SoftProf-Python-'))
         self.processes = {}; self.revisions = {'render': 0, 'gamut': 0}
         self.closing = False; self.ready = False; self.exporting = False
         self.path = self.printer = self.pixel = None
@@ -497,7 +494,7 @@ class Controller:
     def build(self):
         ui = self.ui
         self.window = make_window(1240, 880); self.window.setMinSize_((1040, 770))
-        self.window.setTitle_('InkProf · Soft proof · Python'); self.window.setDelegate_(self.delegate)
+        self.window.setTitle_('SoftProf · Python'); self.window.setDelegate_(self.delegate)
         body = make_body(self.window)
         self.language = popup(ui, ('Svenska', 'English'), self.change_language)
         self.language.selectItemAtIndex_(1 if ui.language == 'en' else 0)
@@ -560,7 +557,7 @@ class Controller:
 
     def build_menu(self):
         ui = self.ui; main = A.NSMenu.alloc().init()
-        for title, items in [('', [('Om InkProf Soft Proof', '', self.show_about), ('Visa GPL-licensen', '', self.show_license), ('Avsluta InkProf Soft proof', 'q', lambda _: A.NSApplication.sharedApplication().terminate_(None))]),
+        for title, items in [('', [('Om SoftProf', '', self.show_about), ('Visa GPL-licensen', '', self.show_license), ('Avsluta SoftProf', 'q', lambda _: A.NSApplication.sharedApplication().terminate_(None))]),
                              ('Redigera', [('Kopiera','c','copy:'), ('Klistra in','v','paste:'), ('Markera allt','a','selectAll:')])]:
             top = A.NSMenuItem.alloc().init(); main.addItem_(top)
             submenu = A.NSMenu.alloc().initWithTitle_('')
@@ -575,13 +572,13 @@ class Controller:
 
     def show_about(self, sender=None):
         alert = A.NSAlert.alloc().init()
-        alert.setMessageText_(f'InkProf Soft Proof {APP_VERSION}')
+        alert.setMessageText_(f'SoftProf {APP_VERSION}')
         alert.setInformativeText_(f'Copyright (c) 2026 {AUTHOR}\n{CONTACT}\n{GITHUB}\n\n'+self.ui.text('Fri programvara under GNU GPL version 3 eller senare. Programmet tillhandahålls utan garanti.'))
         alert.addButtonWithTitle_(self.ui.text('Stäng'))
         alert.runModal()
 
     def show_license(self, sender=None):
-        path = ROOT/'Notices/InkProf-GPL-3.0.txt' if FROZEN else ROOT/'LICENSE'
+        path = ROOT/'Notices/SoftProf-GPL-3.0.txt' if FROZEN else ROOT/'LICENSE'
         A.NSWorkspace.sharedWorkspace().openURL_(F.NSURL.fileURLWithPath_(str(path)))
 
     def change_language(self, sender=None):
@@ -589,7 +586,6 @@ class Controller:
         self.ui.defaults.setObject_forKey_(self.ui.language, 'language')
         self.ui.refresh()
         for menu in (self.source, self.working, self.intent, self.zoom, self.language): menu.synchronizeTitleAndSelectedItem()
-        if self.gamut: self.gamut.projection.synchronizeTitleAndSelectedItem()
 
     def screen_changed(self):
         screen = self.window.screen() if hasattr(self, 'window') else None
@@ -843,9 +839,7 @@ class Controller:
             assert self.bpc.title() == self.ui.text('Svartpunktskompensation')
             assert self.ui.text('2 Arbetsfärgrymd') in self.gamut.values.stringValue()
             assert self.ui.defaults.stringForKey_('language') == language
-        for projection in range(3):
-            self.gamut.projection.selectItemAtIndex_(projection); self.gamut.change_projection(); self.gamut.plot.display()
-        self.gamut.projection.selectItemAtIndex_(0); self.gamut.change_projection()
+        self.gamut.plot.display()
         for enabled in (False,True):
             self.gamut.background.setState_(int(enabled)); self.gamut.change_background(); self.gamut.plot.display()
         points_before = json.dumps(self.gamut.plot.data)
