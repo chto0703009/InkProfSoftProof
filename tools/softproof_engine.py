@@ -149,6 +149,10 @@ def run(request):
             result.info['icc_profile'] = printer.inkprof_original_bytes
         save_image(result, request['destination'], request['image'], image.info.get('dpi'))
         return dict(ok=True, **metadata, destination=request['destination'])
+    # Interactive approximation only; save and gamut return above at full resolution.
+    limit = request.get('previewLimit', 0)
+    if limit > 0:
+        image.thumbnail((limit, limit), Image.Resampling.LANCZOS)
     display = load_profile(request['display'])
     # Cache only the setting-independent original preview. Its source, delivery
     # profile and file identity must match; conversion/export precision is intact.
@@ -159,7 +163,7 @@ def run(request):
         directory=Path(request['originalCache']); directory.mkdir(parents=True,exist_ok=True)
         cached=directory/(key+'.png')
     hit=cached is not None and cached.exists()
-    # Full-resolution previews make 100% zoom actual pixel inspection.
+    # Preview transforms operate on the reduced image when requested.
     original, proof = previews(image, source, working, printer, display, intent, bpc,
                                request.get('paper', False), request.get('ink', True),include_original=not hit)
     folder = Path(request['output'])
@@ -167,11 +171,6 @@ def run(request):
     for name, preview in [('original', original), ('proof', proof)]:
         if preview is None:
             shutil.copyfile(cached,folder/'original.png'); continue
-        # Convert before reducing: ICC transforms are nonlinear, so averaging
-        # source pixels first can change the predicted colour.
-        limit = request.get('previewLimit', 0)
-        if limit > 0:
-            preview.thumbnail((limit, limit), Image.Resampling.LANCZOS)
         preview.save(folder / (name + '.png'), icc_profile=display.tobytes(),compress_level=1)
         if name=='original' and cached is not None:
             fd,temporary=tempfile.mkstemp(dir=cached.parent,suffix='.tmp'); os.close(fd)

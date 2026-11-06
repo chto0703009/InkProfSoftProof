@@ -32,7 +32,7 @@ class ColourTests(unittest.TestCase):
         actual = np.array(lab_values(engine.load_profile('srgb'), rgb))
         self.assertLess(float(np.linalg.norm(actual-expected, axis=1).max()), .06)
 
-    def test_preview_is_resized_after_colour_conversion(self):
+    def test_preview_is_resized_before_colour_conversion(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             srgb = engine.load_profile('srgb')
@@ -44,8 +44,9 @@ class ColourTests(unittest.TestCase):
             printer.write_bytes(lab.tobytes()); display.write_bytes(srgb.tobytes())
             request = dict(image=str(source), printer=str(printer), display=str(display), output=str(root/'preview'), previewLimit=2000, intent=1, bpc=True)
             result = engine.run(request)
-            full = engine.previews(image, srgb, srgb, lab, srgb, 1, True, False)[1]
-            full.thumbnail((2000,2000), Image.Resampling.LANCZOS)
+            image, srgb, _ = engine.load_image(str(source))
+            image.thumbnail((2000,2000), Image.Resampling.LANCZOS)
+            full = engine.previews(image, srgb, srgb, engine.load_profile(str(printer)), engine.load_profile(str(display)), 1, True, False)[1]
             with Image.open(root/'preview/proof.png') as actual:
                 self.assertEqual(actual.tobytes(), full.tobytes())
                 self.assertEqual(actual.width, result['previewWidth'])

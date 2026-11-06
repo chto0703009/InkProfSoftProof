@@ -1,6 +1,6 @@
 # SoftProf
 
-User guide - version 2.4.2 - 6 November 2026
+User guide - version 2.4.3 - 6 November 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 or later (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ SoftProf compares an image with a prediction of its printed appearance. It helps
 
 ### Install the app
 
-Open `SoftProf-2.4.2-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps: **Apple Silicon requires macOS 14+; Intel requires macOS 13 Ventura+**. Apple Silicon is ARM64; Intel is x86_64. All bundled Intel binaries are checked against the Ventura deployment target. Physical Ventura hardware has not been tested here. Install only the matching app. Python and the required libraries are included; the development project is not needed.
+Open `SoftProf-2.4.3-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps: **Apple Silicon requires macOS 14+; Intel requires macOS 13 Ventura+**. Apple Silicon is ARM64; Intel is x86_64. All bundled Intel binaries are checked against the Ventura deployment target. Physical Ventura hardware has not been tested here. Install only the matching app. Python and the required libraries are included; the development project is not needed.
 
 The package is ad hoc signed, but not Developer ID signed or Apple-notarized. If macOS blocks the first launch, review it in **System Settings > Privacy & Security > Open Anyway**. The DMG includes both manuals, the GPL license and application source.
 
@@ -62,7 +62,7 @@ Different intents can produce the same result when the profile does not provide 
 
 **Simulate paper white** is a separate screen-proof setting. It selects absolute colorimetric proof-to-display rendering; the selected printer conversion intent remains a separate stage. This setting affects the preview, not the saved printer pixels.
 
-**Simulate black ink** preserves the printer profile’s predicted black. Turn it off, with paper white off, to map black to screen black. Paper-white simulation also enables black-ink simulation. These viewing choices do not change export. The preview uses the same 8- or 16-bit printer values as export; LittleCMS optimisation is disabled to avoid extra interpolation errors. JPEG export can introduce additional changes.
+**Simulate black ink** preserves the printer profile’s predicted black. Turn it off, with paper white off, to map black to screen black. Paper-white simulation also enables black-ink simulation. These viewing choices do not change export. The preview uses the same 8- or 16-bit conversion pipeline on reduced pixels, so fine details and mixed colours may differ from full-resolution export; LittleCMS optimisation is disabled to avoid extra interpolation errors. JPEG export can introduce additional changes.
 
 ### Screen colour management
 
@@ -76,11 +76,13 @@ The left view starts as the original interpreted with its source profile. The ri
 
 Choose **Lock simulation as reference** to keep result A on the left. Change profiles, rendering intent or compensation to create result B on the right. The reference caption preserves the settings used for A. **Show original on the left** returns to the original comparison.
 
+**Compare with another profile…** locks the current simulation on the left and opens the profile dialog for the right. Captions identify each profile and its settings. Further changes affect the right while the left stays locked.
+
 ### Zoom and scroll
 
-Both views share zoom and scrolling. **Fit** shows the whole image; 25%, 50% and 100% use the original dimensions. The preview retains all pixels, so 100% no longer enlarges a reduced preview. At 100%, one image pixel maps to one backing display pixel, accounting for Retina scaling. Large images require more memory and take longer to process.
+Both views share zoom and scrolling. **Fit** shows the whole image. Interactive previews are reduced to at most 1600 pixels on the longest side before ICC processing. The 25%, 50% and 100% settings use original dimensions but enlarge this reduced preview; they do not show full-resolution detail. Export and clicked-pixel analysis use the original image.
 
-Recent preview settings are cached during the session (up to six completed views). Returning to a cached setting skips source-image decoding and ICC processing. The unchanged original preview is reused, and PNG preview compression is faster but remains lossless. A new setting still requires full-resolution processing; export precision is unchanged.
+Recent preview settings are cached during the session (up to six completed views). Returning to a cached setting skips source-image decoding and ICC processing. The unchanged original preview is reused, and PNG preview compression is faster but remains lossless. New settings process the reduced preview. Export still processes the original at full resolution.
 
 The **Gamut…** button is directly below the right-hand image.
 

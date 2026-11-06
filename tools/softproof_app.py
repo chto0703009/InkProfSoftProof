@@ -595,10 +595,11 @@ class Controller:
         self.ink = button(ui, 'Simulera trycksvärta', self.settings_changed, True); self.ink.setState_(A.NSControlStateValueOn)
         body.addArrangedSubview_(stack([ui.label('Återgivning:'), self.intent, self.bpc, self.ink, self.paper]))
         self.pin = button(ui, 'Lås simulering som referens', self.pin_reference)
+        self.compare = button(ui, 'Jämför med annan profil…', self.compare_profile)
         self.unpin = button(ui, 'Visa original till vänster', self.clear_reference)
         self.pin.setEnabled_(False); self.unpin.setEnabled_(False)
         self.zoom = popup(ui, ('Anpassa', '25 %', '50 %', '100 %'), self.update_zoom)
-        body.addArrangedSubview_(stack([self.pin, self.unpin, ui.label('Gemensam zoom:'), self.zoom]))
+        body.addArrangedSubview_(stack([self.pin, self.compare, self.unpin, ui.label('Gemensam zoom:'), self.zoom]))
         self.left, self.right = (Pane.alloc().initWithFrame_(R(0, 0, 600, 360)) for _ in range(2))
         panes = stack([self.left, self.right], spacing=14); panes.setDistribution_(A.NSStackViewDistributionFillEqually)
         panes.heightAnchor().constraintGreaterThanOrEqualToConstant_(260).setActive_(True)
@@ -621,7 +622,7 @@ class Controller:
             execution = ui.text({'native':'Direkt (native)', 'rosetta':'Via Rosetta (Intel på Apple Silicon)', 'unknown':'Okänd'}[self.runtime['execution']])
             return ui.text('Dator: %@ · Python: %@ · Körning: %@', host, self.runtime['process'], execution)
         ui.bind(self.runtime_label, runtime_text)
-        note = ui.label('Förhandsvisning och export: full upplösning, 8 eller 16 bitar/kanal • Pappersvitt och trycksvärta påverkar bara simuleringen', True, 11)
+        note = ui.label('Förhandsvisning: högst 1600 pixlar, approximativ • Export: full upplösning, 8 eller 16 bitar/kanal', True, 11)
         for view in (self.status, self.display_label, self.runtime_label, note): body.addArrangedSubview_(view)
         for view in (panes, actions, self.status, self.display_label, self.runtime_label, note): view.widthAnchor().constraintEqualToAnchor_constant_(body.widthAnchor(), -32).setActive_(True)
         spacer = A.NSView.alloc().initWithFrame_(R(0, 0, 1, 1))
@@ -796,7 +797,7 @@ class Controller:
             self.image_bits = response.get('bits',8)
             if self.args.smoke_test:
                 representation = self.proof.representations()[0]
-                assert (representation.pixelsWide(), representation.pixelsHigh()) == self.original_size
+                assert (representation.pixelsWide(), representation.pixelsHigh()) == (response['previewWidth'], response['previewHeight'])
                 if self.image_bits==16: assert representation.bitsPerSample() >= 16
             source, embedded = response['source'], response['embedded']
             self.original_caption = lambda: source+' · '+self.ui.text('inbäddad källprofil' if embedded else 'tilldelad källprofil')+self.ui.text(' · %@ bitar/kanal',response.get('bits',8))
@@ -809,7 +810,7 @@ class Controller:
             self.ready = True; self.pin.setEnabled_(True); self.save.setEnabled_(bool(self.printer) and not self.exporting)
             self.update_zoom(); self.schedule_gamut()
             if self.args.smoke_test: self.smoke_rendered()
-        self.worker('render', {**self.request(),'originalCache':str(self.temporary/'original-cache'),'renderCache':str(self.temporary/'render-cache')}, done)
+        self.worker('render', {**self.request(),'previewLimit':1600,'originalCache':str(self.temporary/'original-cache'),'renderCache':str(self.temporary/'render-cache')}, done)
 
     def update_zoom(self, sender=None):
         if not hasattr(self, 'left') or self.original is None: return
@@ -828,6 +829,17 @@ class Controller:
             other.scroll.contentView().scrollToPoint_(clip.bounds().origin)
             other.scroll.reflectScrolledClipView_(other.scroll.contentView())
         finally: self.syncing = False
+
+    def compare_profile(self, sender=None):
+        if not self.ready or not self.printer:
+            return
+        path = self.dialog('Välj skrivar-/pappersprofil…')
+        if not path:
+            return
+        self.pin_reference()
+        self.printer = path
+        self.ui.bind(self.printer_label, lambda: Path(self.printer).name)
+        self.settings_changed()
 
     def pin_reference(self, sender=None):
         if not self.ready: return
