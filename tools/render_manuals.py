@@ -116,7 +116,7 @@ def blocks(lines, language):
             illustration=ROOT/'resources/colour-cloud-example.png'
             with Image.open(illustration) as picture: ratio=picture.height/picture.width
             output.append(PDFImage(str(illustration),width=WIDTH,height=WIDTH*ratio))
-            caption=('Exempel från en syntetisk testbild. Molnet beror på vald bild och inställningar.' if language=='sv' else 'Example from a synthetic test image. The cloud depends on the selected image and settings.')
+            caption=('Exempel från en syntetisk testbild. Punkterna i färgrymden beror på vald bild och inställningar.' if language=='sv' else 'Example from a synthetic test image. The colour-space points depend on the selected image and settings.')
             output.append(Paragraph(caption,STYLES['small']));index+=1;continue
 
         if line.startswith('|'):

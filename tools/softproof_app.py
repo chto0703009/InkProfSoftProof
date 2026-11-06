@@ -331,8 +331,8 @@ class GamutWindow:
         body = make_body(self.window)
         body.addArrangedSubview_(ui.label('Färgens väg genom profilerna · CIELAB D50', size=18))
         self.is3d = False
-        self.mode = button(ui, 'Visa 3D-färgmoln', self.change_mode)
-        ui.bind(self.mode, lambda: ui.text('Visa 2D' if self.is3d else 'Visa 3D-färgmoln'), 'setTitle_')
+        self.mode = button(ui, 'Visa 3D-färgrymd', self.change_mode)
+        ui.bind(self.mode, lambda: ui.text('Visa 2D' if self.is3d else 'Visa 3D-färgrymd'), 'setTitle_')
         self.cloud_role = popup(ui, ROLE_KEYS, self.change_cloud)
         self.cloud_role.selectItemAtIndex_(2)
         self.movement = button(ui, 'Visa förflyttning', self.change_cloud, True)
@@ -969,7 +969,7 @@ class Controller:
         self.gamut.movement.setState_(1); self.gamut.change_cloud()
         self.gamut.cloud.reset_camera(); assert self.gamut.cloud.zoom == 1
         self.gamut.change_mode(); assert not self.gamut.is3d
-        print('PASS: Python native UI, ICC previews, A/B, zoom/scroll, pixel selection, 2D/3D colour cloud, movement, tint, languages and full-resolution export', flush=True)
+        print('PASS: Python native UI, ICC previews, A/B, zoom/scroll, pixel selection, 2D/3D colour space, movement, tint, languages and full-resolution export', flush=True)
         self.smoke_phase = 5
         A.NSApplication.sharedApplication().terminate_(None)
 

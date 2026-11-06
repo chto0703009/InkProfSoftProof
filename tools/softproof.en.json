@@ -118,7 +118,7 @@
   " · Trycksvärta %@": " · Black ink %@",
   "Förhandsvisning och export: full upplösning, 8 bitar/kanal • Pappersvitt och trycksvärta påverkar bara simuleringen": "Preview and export: full resolution, 8 bits/channel • Paper white and black ink affect only the preview",
   "Bilder med mer än 8 bitar per kanal stöds inte. Skapa en separat 8-bitarskopia först; originalet ändras inte.": "Images above 8 bits per channel are not supported. Create a separate 8-bit copy first; the original stays unchanged.",
-  "Visa 3D-färgmoln": "Show 3D colour cloud",
+  "Visa 3D-färgrymd": "Show 3D colour space",
   "Visa 2D": "Show 2D",
   "Visa förflyttning": "Show movement",
   "Återställ 3D-vy": "Reset 3D view",
