@@ -1,0 +1,4 @@
+# Intel build on Ventura or newer, including builds under Rosetta.
+# Pin the compatible OpenBLAS wheel; pip on a new Mac otherwise picks the macOS 14 Accelerate wheel.
+-r requirements-softproof-build.txt
+numpy @ https://files.pythonhosted.org/packages/1c/c0/c6bb172c916b00700ed3bf71cb56175fd1f7dbecebf8353545d0b5519f6c/numpy-2.3.2-cp313-cp313-macosx_10_13_x86_64.whl#sha256=c8d9727f5316a256425892b043736d63e89ed15bbfe6556c5ff4d9d4448ff3b3

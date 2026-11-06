@@ -2,14 +2,14 @@
 
 A Python macOS application for comparing ICC colour-space conversions and simulating printer/paper output. Compare the original and a soft proof side by side, lock an A/B reference, and click an image to follow a colour through the source, working and printer profiles in CIELAB D50.
 
-**Version:** 2.4.0
+**Version:** 2.4.1
 **Author:** Christer Törnkvist
 **Contact:** [christer@borgasundsfotografiska.se](mailto:christer@borgasundsfotografiska.se)
 **License:** [GNU GPL version 3 or later](LICENSE) (`GPL-3.0-or-later`). No warranty. See [license scope](LICENSE_SCOPE.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## Install
 
-Download the installer from [GitHub Releases](https://github.com/chto0703009/SoftProf/releases/latest). The file is `SoftProf-2.4.0-macos.dmg` for **macOS 14 or later**. It contains two separately labelled apps, not one universal binary: **SoftProf - Apple Silicon.app** (ARM64) and **SoftProf - Intel.app** (x86_64).
+Download the installer from [GitHub Releases](https://github.com/chto0703009/SoftProf/releases/latest). The file is `SoftProf-2.4.1-macos.dmg` for **Apple Silicon on macOS 14+ or Intel on macOS 13 Ventura+**. It contains two separately labelled apps, not one universal binary: **SoftProf - Apple Silicon.app** (ARM64) and **SoftProf - Intel.app** (x86_64).
 
 1. Open the DMG and drag **only the app matching your Mac** to Applications: **Apple Silicon** for an Apple-chip Mac (M1/M2/M3 etc), or **Intel** for an Intel Mac.
 2. Eject the disk image and launch the app from Applications.
@@ -47,7 +47,7 @@ The DMG also contains the full GPL text, author/contact information, both manual
 - Live Swedish/English UI, saved language preference, visible ARM/Intel/Rosetta runtime information and a Quit button at the bottom right.
 - Author, contact and GPL information in the About menu; a menu item opens the full license.
 
-The gamut window switches between the existing 2D diagram and a rotatable 3D colour space. Choose original, working or printer colours; enable **Show movement** to animate the same representative colours and retain arrows as conversion settings change. Point size reflects approximate sampled frequency.
+The gamut window switches between the existing 2D diagram and a rotatable 3D colour space. Choose original, working or printer colours; enable **Show movement** to animate the same representative colours and retain arrows as conversion settings change. Point size reflects approximate sampled frequency. Bright yellow arrows point from the previous position to the new result; the text below identifies the before/after working spaces and displayed stages, including after colour-space changes.
 
 ## Colour handling and limits
 
@@ -103,11 +103,13 @@ local-config/build-arm/.venv/bin/python -m pip install -r tools/requirements-sof
 local-config/build-arm/.venv/bin/python tools/build_softproof_dmg.py --arch arm64 --app-only
 
 arch -x86_64 python3.13 -m venv local-config/build-intel/.venv
-arch -x86_64 local-config/build-intel/.venv/bin/python -m pip install -r tools/requirements-softproof-build.txt
+arch -x86_64 local-config/build-intel/.venv/bin/python -m pip install -r tools/requirements-softproof-build-intel.txt
 arch -x86_64 local-config/build-intel/.venv/bin/python tools/build_softproof_dmg.py --arch x86_64 --app-only
 
 local-config/build-arm/.venv/bin/python tools/build_softproof_dmg.py --combined-dmg
 ```
+
+The Intel build uses the pinned compatible NumPy OpenBLAS wheel, avoiding the macOS 14-only Accelerate wheel selected automatically on newer build hosts. Every bundled Mach-O deployment target must be at or below the app’s declared minimum (Intel 13.0; Apple Silicon 14.0). Static deployment checks do not replace testing on a physical Ventura Mac; that environment is not available on the build machine.
 
 The build includes Python, required libraries, notices, architecture audit reports and corresponding application source. The audit fails if any Mach-O file has the wrong architecture. It writes the DMG and a SHA-256 file under `local-config/softproof-build/` and copies verified copies to Downloads. Personal photographs, measurements, project data, virtual environments and Git metadata are excluded from the source archive.
 

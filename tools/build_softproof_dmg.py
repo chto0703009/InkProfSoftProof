@@ -26,6 +26,7 @@ BASE_BUILD = ROOT/'local-config/softproof-build'
 BUILD = BASE_BUILD
 TARGET = platform.machine()
 LABELS = {'arm64':'Apple Silicon','x86_64':'Intel'}
+MINIMUM_OS = {'arm64':'14.0','x86_64':'13.0'}
 VERSION = (ROOT/'VERSION').read_text().strip()
 APP_NAME = 'SoftProf'
 
@@ -119,10 +120,10 @@ collection = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, name={APP
 app = BUNDLE(collection, name={APP_NAME+' - '+LABELS[TARGET]+'.app'!r}, icon={str(icon_path)!r},
     bundle_identifier={'se.inkprof.softproof.'+('arm64' if TARGET=='arm64' else 'intel')!r}, version={VERSION!r},
     info_plist={{'CFBundleDisplayName':{APP_NAME+' - '+LABELS[TARGET]!r},'CFBundleShortVersionString':{VERSION!r},
-        'LSMinimumSystemVersion':'14.0','NSHighResolutionCapable':True,
+        'LSMinimumSystemVersion':{MINIMUM_OS[TARGET]!r},'NSHighResolutionCapable':True,
         'NSHumanReadableCopyright':'Copyright (c) 2026 Christer Törnkvist <christer@borgasundsfotografiska.se>. GNU GPL version 3 or later.'}})
 ''')
-    env = {**os.environ, 'MACOSX_DEPLOYMENT_TARGET':'14.0', 'PYINSTALLER_STRICT_BUNDLE_CODESIGN_ERROR':'1'}
+    env = {**os.environ, 'MACOSX_DEPLOYMENT_TARGET':MINIMUM_OS[TARGET], 'PYINSTALLER_STRICT_BUNDLE_CODESIGN_ERROR':'1'}
     if platform.machine()=='x86_64' and native_tool('lipo')[0]=='/usr/bin/arch':
         wrappers=BUILD/'native-tools';wrappers.mkdir(parents=True,exist_ok=True)
         for tool in ('lipo','codesign','xcrun','strip','install_name_tool'):
@@ -139,7 +140,7 @@ app = BUNDLE(collection, name={APP_NAME+' - '+LABELS[TARGET]+'.app'!r}, icon={st
 def source_archive(destination):
     paths = ['tools/softproof_app.py','tools/softproof_engine.py','tools/icc_processing.py','tools/image16.py','tools/gamut_analysis.py','tools/cloud_view.py',
              'tools/runtime_architecture.py','tools/softproof.en.json','tools/build_softproof_dmg.py','tools/audit_softproof_architecture.py',
-             'tools/requirements-softproof-build.txt','tools/requirements-softproof.txt','analysis/lcms_float.py',
+             'tools/requirements-softproof-build.txt','tools/requirements-softproof-build-intel.txt','tools/requirements-softproof.txt','analysis/lcms_float.py',
              'tests/test_softproof_16bit.py','tests/test_softproof_engine.py','tests/test_softproof_colour.py','tests/test_softproof_cloud.py','tests/test_softproof_architecture.py','docs/softproof.sv.md',
              'LICENSE','LICENSE_SCOPE.md','AUTHORS.md','README.md','VERSION','AGENTS.md','.gitignore','.gitattributes','.python-version','requirements.txt',
              'THIRD_PARTY_NOTICES.md','licenses/softproof-python','licenses/fonts','resources/fonts',
@@ -165,7 +166,7 @@ def make_dmg(apps):
     for name in ['SoftProf-Manual-sv.pdf','SoftProf-Manual-en.pdf']:
         shutil.copyfile(ROOT/'output/pdf'/name, stage/name)
     (stage/'Installera - Install.txt').write_text(f'''SOFTPROF {VERSION} — APPLE SILICON + INTEL
-macOS 14 eller senare / macOS 14 or later
+Apple Silicon: macOS 14+ / Intel: macOS 13 Ventura+
 
 SVENSKA
 1. Välj EN app: "Apple Silicon" för Mac med Apple-chip (M1/M2/M3 osv),

@@ -331,6 +331,7 @@ class GamutWindow:
         body = make_body(self.window)
         body.addArrangedSubview_(ui.label('Färgens väg genom profilerna · CIELAB D50', size=18))
         self.is3d = False
+        self.cloud_context = self.previous_cloud_context = None
         self.mode = button(ui, 'Visa 3D-färgrymd', self.change_mode)
         ui.bind(self.mode, lambda: ui.text('Visa 2D' if self.is3d else 'Visa 3D-färgrymd'), 'setTitle_')
         self.cloud_role = popup(ui, ROLE_KEYS, self.change_cloud)
@@ -371,13 +372,16 @@ class GamutWindow:
             plot.setTranslatesAutoresizingMaskIntoConstraints_(False); self.canvas.addSubview_(plot)
             for edge in ('leadingAnchor','trailingAnchor','topAnchor','bottomAnchor'):
                 getattr(plot,edge)().constraintEqualToAnchor_(getattr(self.canvas,edge)()).setActive_(True)
+        self.direction = ui.label(wrap=True, size=12)
+        self.direction.setMaximumNumberOfLines_(5); self.direction.setHidden_(True)
+        ui.bind(self.direction, self.direction_text)
         self.message = ui.label('Klicka i bilden för att välja ett färgprov.', True)
         self.values = ui.label(wrap=True, size=12); self.values.setFont_(A.NSFont.monospacedSystemFontOfSize_weight_(12, A.NSFontWeightRegular))
         self.values.setMaximumNumberOfLines_(8)
         self.profiles = ui.label(wrap=True, size=11); self.profiles.setMaximumNumberOfLines_(3)
         note = ui.label('Konturer: ungefärliga konvexa ytterhöljen av samplade ICC-värden, projicerade på a*/b*-planet. De visar inte exakt om en färg ryms. Grå ringar: föregående inställning för samma pixel. Lab-punkterna visar profilernas absoluta D50-värden; skärm och pappersvitssimulering ingår inte.', True, 11)
-        ui.bind(note, lambda: ui.text('3D visar bildens vanligaste samplade färggrupper, inte hela profilens omfång. Punktstorlek anger ungefärlig förekomst. L* är höjd; a* är grönt–rött, b* blått–gult. Punkternas skärmfärger är approximativa.' if self.is3d else 'Konturer: ungefärliga konvexa ytterhöljen av samplade ICC-värden, projicerade på a*/b*-planet. De visar inte exakt om en färg ryms. Grå ringar: föregående inställning för samma pixel. Lab-punkterna visar profilernas absoluta D50-värden; skärm och pappersvitssimulering ingår inte.'))
-        for view in (self.hint, self.canvas, self.message, self.values, self.profiles, note):
+        ui.bind(note, lambda: ui.text('3D visar bildens samplade färggrupper. L* ökar mot ljusare färger uppåt; a* går från grönt (−) till rött (+), b* från blått (−) till gult (+). Vid rotation följer riktningarna axlarnas märkning. Punktstorlek anger ungefärlig förekomst. Skärmfärgerna är approximativa; punkterna är inte hela profilens omfång.' if self.is3d else 'Konturer: ungefärliga konvexa ytterhöljen av samplade ICC-värden, projicerade på a*/b*-planet. De visar inte exakt om en färg ryms. Grå ringar: föregående inställning för samma pixel. Lab-punkterna visar profilernas absoluta D50-värden; skärm och pappersvitssimulering ingår inte.'))
+        for view in (self.hint, self.canvas, self.direction, self.message, self.values, self.profiles, note):
             body.addArrangedSubview_(view); view.widthAnchor().constraintEqualToAnchor_constant_(body.widthAnchor(), -32).setActive_(True)
         self.canvas.heightAnchor().constraintGreaterThanOrEqualToConstant_(300).setActive_(True)
         self.canvas.setContentHuggingPriority_forOrientation_(1, A.NSLayoutConstraintOrientationVertical)
@@ -386,13 +390,35 @@ class GamutWindow:
     def change_mode(self, sender=None):
         self.is3d = not self.is3d
         self.plot.setHidden_(self.is3d); self.cloud.setHidden_(not self.is3d)
+        self.direction.setHidden_(not self.is3d)
         self.ui.refresh(); self.update_hint()
         self.canvas.setNeedsDisplay_(True)
 
+    def direction_text(self):
+        ui=self.ui
+        text=ui.text('Gula pilar: tidigare läge → nytt läge. Pilspetsen visar resultatet efter byte av färgrymd eller andra inställningar.')
+        if not self.movement.state():
+            text=ui.text('Markera Visa förflyttning för gula pilar från tidigare läge till nytt läge vid byte av färgrymd eller inställningar.')
+        if self.cloud_context:
+            space,role=self.cloud_context
+            current=ui.text('%@ · %@',space,ui.text(ROLE_KEYS[ROLES.index(role)]))
+            if self.previous_cloud_context:
+                old_space,old_role=self.previous_cloud_context
+                previous=ui.text('%@ · %@',old_space,ui.text(ROLE_KEYS[ROLES.index(old_role)]))
+                text+='\n'+ui.text('Före: %@ → Efter: %@',previous,current)
+            else:
+                text+='\n'+ui.text('Nu: %@. Ändra färgrymd eller inställningar för att jämföra.',current)
+        return text
+
     def change_cloud(self, sender=None):
+        same_image=self.cloud.data.get('identity')==self.plot.data.get('cloud',{}).get('identity')
+        self.previous_cloud_context=self.cloud_context if same_image else None
         self.cloud.role = ROLES[self.cloud_role.indexOfSelectedItem()]
+        space=self.plot.data.get('working')
+        self.cloud_context=(space,self.cloud.role) if space else None
         self.cloud.motion = bool(self.movement.state())
         self.cloud.update_cloud(self.plot.data.get('cloud', {}), self.plot.data.get('points', []))
+        self.ui.bind(self.direction,self.direction_text)
         self.update_hint()
 
     def change_roles(self, sender=None):
@@ -438,6 +464,7 @@ class GamutWindow:
             pixel = response.get('pixel')
             text = (ui.text('Originalpixel x=%@, y=%@ · Pilar: original → arbetsfärgrymd → förväntad utskrift', pixel[0]+1, pixel[1]+1)
                     if pixel else ui.text('Klicka i någon av bildvyerna för att följa en färg.'))
+            if self.is3d and pixel: text=ui.text('Originalpixel x=%@, y=%@',pixel[0]+1,pixel[1]+1)
             if 'alpha' in response: text += ui.text(' · Alfa %@/%@ (prov före bakgrundsblandning)', response['alpha'], response.get('alphaMax',255))
             return text
         ui.bind(self.message, message)
@@ -895,6 +922,9 @@ class Controller:
         assert len(self.gamut.plot.previous) == 3
         assert response['points'][1]['channels'] != self.smoke_channels
         assert len(response['profiles']) == len(response['points']) == 3
+        assert self.gamut.previous_cloud_context[0] != self.gamut.cloud_context[0]
+        assert self.gamut.previous_cloud_context[0] in self.gamut.direction.stringValue()
+        assert self.gamut.cloud_context[0] in self.gamut.direction.stringValue()
         import time
         import numpy as np
         cloud=self.gamut.cloud
@@ -961,7 +991,22 @@ class Controller:
         assert self.gamut.cloud.old is not None, 'Cloud colours did not retain identity across settings'
         self.gamut.change_mode()
         assert self.gamut.is3d and self.gamut.plot.isHidden() and not self.gamut.cloud.isHidden()
+        self.gamut.cloud_role.selectItemAtIndex_(0); self.gamut.change_cloud()
+        import time, io
+        self.gamut.cloud.start_time=time.monotonic()-1; self.gamut.cloud.tick(self.gamut.cloud.token)
         self.gamut.cloud.yaw += .3; self.gamut.cloud.zoom = 1.1
+        self.gamut.window.contentView().layoutSubtreeIfNeeded()
+        def pixels():
+            plot=self.gamut.cloud; plot.display()
+            rep=plot.bitmapImageRepForCachingDisplayInRect_(plot.bounds())
+            plot.cacheDisplayInRect_toBitmapImageRep_(plot.bounds(),rep)
+            return np.asarray(Image.open(io.BytesIO(bytes(rep.representationUsingType_properties_(A.NSBitmapImageFileTypePNG,{})))).convert('RGB'),dtype=int)
+        with_arrows=pixels()
+        self.gamut.cloud.motion=False; without_arrows=pixels(); self.gamut.cloud.motion=True
+        changed=np.any(with_arrows!=without_arrows,axis=2)
+        yellow=(with_arrows[:,:,0]>180)&(with_arrows[:,:,1]>160)&(with_arrows[:,:,2]<110)
+        assert (yellow&changed).sum()>200, 'Movement arrows are not visibly yellow'
+        assert 'Yellow arrows:' in self.gamut.direction.stringValue()
         self.gamut.cloud.display()
         self.gamut.window.contentView().layoutSubtreeIfNeeded()
         view=self.gamut.window.contentView(); bitmap=view.bitmapImageRepForCachingDisplayInRect_(view.bounds())

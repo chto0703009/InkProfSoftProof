@@ -1,6 +1,6 @@
 # SoftProf
 
-User guide - version 2.4.0 - 6 November 2026
+User guide - version 2.4.1 - 6 November 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 or later (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ SoftProf compares an image with a prediction of its printed appearance. It helps
 
 ### Install the app
 
-Open `SoftProf-2.4.0-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps for **macOS 14 or later**. Apple Silicon is ARM64; Intel is x86_64. Install only the matching app. Python and the required libraries are included; the development project is not needed.
+Open `SoftProf-2.4.1-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps: **Apple Silicon requires macOS 14+; Intel requires macOS 13 Ventura+**. Apple Silicon is ARM64; Intel is x86_64. All bundled Intel binaries are checked against the Ventura deployment target. Physical Ventura hardware has not been tested here. Install only the matching app. Python and the required libraries are included; the development project is not needed.
 
 The package is ad hoc signed, but not Developer ID signed or Apple-notarized. If macOS blocks the first launch, review it in **System Settings > Privacy & Security > Open Anyway**. The DMG includes both manuals, the GPL license and application source.
 
@@ -108,9 +108,9 @@ Contours are convex outer envelopes of sampled ICC device values, projected onto
 
 ## 5. 3D colour space
 
-Choose **Show 3D colour space**; **Show 2D** restores the existing diagram. Choose **Original**, **Working space** or **Print** in the 3D view menu. Drag the plot to rotate, scroll to zoom, or choose **Reset 3D view**. L* is height, a* green-red and b* blue-yellow. The selected image pixel is marked with a white ring in the chosen stage. The L* background controls apply only to 2D.
+Choose **Show 3D colour space**; **Show 2D** restores the existing diagram. Choose **Original**, **Working space** or **Print** in the 3D view menu. Drag the plot to rotate, scroll to zoom, or choose **Reset 3D view**. L* increases upwards towards lighter colours, a* runs from green (negative) to red (positive), and b* from blue (negative) to yellow (positive). Follow the labelled axes after rotating the view. The selected image pixel is marked with a white ring in the chosen stage. The L* background controls apply only to 2D.
 
-Enable **Show movement**, then change a working space, printer profile, rendering intent or BPC in the main window. The same representatives animate from the previous positions to the new ones; arrows remain for comparison. Changing the displayed stage also shows its movement. Disable the option for a static view. Colour-preserving conversions may barely move; paper-white and ink viewing toggles do not alter absolute Lab positions.
+Enable **Show movement**, then change a working space, printer profile, rendering intent or BPC in the main window. The same representatives animate from the previous positions to the new ones; bright yellow arrows remain for comparison. Arrowheads point to the new result. The text below the plot explains this direction and identifies the before/after working spaces and displayed stages, including when you change colour space. Changing the displayed stage also shows its movement. Disable the option for a static view. Colour-preserving conversions may barely move; paper-white and ink viewing toggles do not alter absolute Lab positions.
 
 The 3D view shows up to 1,024 frequent groups from at most 65,536 deterministic stratified pixel samples. Nearby source channel values share a group; an actual source pixel represents each group. The smaller points improve visibility in dense regions; point size still increases with approximate sampled frequency; fully transparent pixels are omitted and partial alpha weights frequency. Rare colours may be omitted. The points are an image distribution, not a solid profile-gamut shell. Their Display P3 screen colours are approximate. Original photographs are unchanged.
 

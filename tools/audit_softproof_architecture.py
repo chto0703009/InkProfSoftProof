@@ -5,6 +5,8 @@
 import argparse
 import hashlib
 import json
+import plistlib
+import re
 from pathlib import Path
 import subprocess
 from runtime_architecture import detect_runtime
@@ -20,8 +22,20 @@ def native_tool(name):
     return prefix+['/usr/bin/'+name]
 
 
+def version_tuple(value):
+    parts=tuple(map(int,value.split('.')))
+    return parts+(0,)*(3-len(parts))
+
+
+def minimum_macos(commands):
+    values=re.findall(r'\bminos\s+([\d.]+)',commands)
+    values+=re.findall(r'cmd LC_VERSION_MIN_MACOSX\s+cmdsize \d+\s+version ([\d.]+)',commands)
+    return max(values,key=version_tuple) if values else None
+
+
 def audit(app, expected):
     app = Path(app).resolve(); seen=set(); files=[]
+    declared=plistlib.loads((app/'Contents/Info.plist').read_bytes())['LSMinimumSystemVersion']
     for path in sorted(app.rglob('*')):
         if path.is_symlink() and not path.resolve().is_relative_to(app):
             raise ValueError(f'External app symlink: {path}')
@@ -32,9 +46,14 @@ def audit(app, expected):
         architectures=subprocess.check_output(native_tool('lipo')+['-archs',str(path)],text=True).split()
         if architectures != [expected]:
             raise ValueError(f'{path.relative_to(app)}: {architectures}, expected only {expected}')
-        files.append(dict(path=str(path.relative_to(app)),architecture=expected,sha256=hashlib.sha256(path.read_bytes()).hexdigest()))
+        commands=subprocess.check_output(native_tool('otool')+['-l',str(path)],text=True)
+        minimum=minimum_macos(commands)
+        if minimum is None: raise ValueError(f'Missing minimum macOS version: {path.relative_to(app)}')
+        if version_tuple(minimum)>version_tuple(declared):
+            raise ValueError(f'{path.relative_to(app)} requires macOS {minimum}, app declares {declared}')
+        files.append(dict(path=str(path.relative_to(app)),architecture=expected,minimum_macos=minimum,sha256=hashlib.sha256(path.read_bytes()).hexdigest()))
     if not files: raise ValueError('No Mach-O files found in app')
-    return dict(app=app.name,architecture=expected,binary_count=len(files),files=files)
+    return dict(app=app.name,architecture=expected,minimum_macos=declared,binary_minimum_macos=max((f['minimum_macos'] for f in files),key=version_tuple),binary_count=len(files),files=files)
 
 
 if __name__=='__main__':

@@ -133,5 +133,12 @@
   "16-bitars Lab-export stöds inte. Välj en RGB- eller CMYK-profil.": "16-bit Lab export is not supported. Choose an RGB or CMYK profile.",
   "TIFF-bildens extra kanaler är inte entydigt markerade som alfa.": "The TIFF extra channels are not unambiguously marked as alpha.",
   "Bildtypen stöds inte. Använd RGB, CMYK eller gråskala med 8 eller 16 bitar per kanal, eller 8-bitars Lab.": "Unsupported image type. Use RGB, CMYK or grayscale with 8 or 16 bits/channel, or 8-bit Lab.",
-  "JPEG-bilder stöds endast med 8 bitar per kanal. Använd TIFF eller PNG för 16 bitar.": "JPEG input is supported only at 8 bits/channel. Use TIFF or PNG for 16 bits."
+  "JPEG-bilder stöds endast med 8 bitar per kanal. Använd TIFF eller PNG för 16 bitar.": "JPEG input is supported only at 8 bits/channel. Use TIFF or PNG for 16 bits.",
+  "Gula pilar: tidigare läge → nytt läge. Pilspetsen visar resultatet efter byte av färgrymd eller andra inställningar.": "Yellow arrows: previous position → new position. The arrowhead marks the result after changing colour space or other settings.",
+  "%@ · %@": "%@ · %@",
+  "Före: %@ → Efter: %@": "Before: %@ → After: %@",
+  "Nu: %@. Ändra färgrymd eller inställningar för att jämföra.": "Now: %@. Change colour space or settings to compare.",
+  "Originalpixel x=%@, y=%@": "Original pixel x=%@, y=%@",
+  "3D visar bildens samplade färggrupper. L* ökar mot ljusare färger uppåt; a* går från grönt (−) till rött (+), b* från blått (−) till gult (+). Vid rotation följer riktningarna axlarnas märkning. Punktstorlek anger ungefärlig förekomst. Skärmfärgerna är approximativa; punkterna är inte hela profilens omfång.": "3D shows sampled image colour groups. L* increases upwards towards lighter colours; a* runs from green (−) to red (+), b* from blue (−) to yellow (+). After rotation, follow the axis labels. Point size indicates approximate frequency. Screen colours are approximate; the points are not the full profile gamut.",
+  "Markera Visa förflyttning för gula pilar från tidigare läge till nytt läge vid byte av färgrymd eller inställningar.": "Enable Show movement for yellow arrows from the previous position to the new position when changing colour space or settings."
 }

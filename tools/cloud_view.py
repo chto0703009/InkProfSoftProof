@@ -103,7 +103,7 @@ class CloudPlot(A.NSView):
                 q=[0,0,0];q[axis]=v;text(v,q,white)
         if self.old is not None and self.motion:
             old=self.projected(self.old);new=self.projected(self.target)
-            A.NSColor.colorWithWhite_alpha_(.6,.45).setStroke();path=A.NSBezierPath.bezierPath();path.setLineWidth_(.65)
+            A.NSColor.colorWithSRGBRed_green_blue_alpha_(1.,.9,.05,1.).setStroke();path=A.NSBezierPath.bezierPath();path.setLineWidth_(1.25)
             for a,b in zip(old,new):
                 if np.linalg.norm(b[:2]-a[:2])<1: continue
                 path.moveToPoint_((a[0],a[1]));path.lineToPoint_((b[0],b[1]))

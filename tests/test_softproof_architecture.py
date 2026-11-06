@@ -6,6 +6,7 @@ import sys
 import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'tools'))
 from runtime_architecture import detect_runtime
+from audit_softproof_architecture import minimum_macos, version_tuple
 
 
 class ArchitectureTests(unittest.TestCase):
@@ -31,6 +32,20 @@ class ArchitectureTests(unittest.TestCase):
 
     def test_contradictory_flags_remain_unknown(self):
         self.assertEqual(self.detect('x86_64', 0, 1)['execution'], 'unknown')
+
+
+class DeploymentTests(unittest.TestCase):
+    def test_modern_and_legacy_binary_targets(self):
+        modern='cmd LC_BUILD_VERSION\n cmdsize 32\n platform 1\n minos 13.0\n sdk 27.0'
+        legacy='cmd LC_VERSION_MIN_MACOSX\n cmdsize 16\n version 10.13\n sdk 10.15'
+        self.assertEqual(minimum_macos(modern),'13.0')
+        self.assertEqual(minimum_macos(legacy),'10.13')
+        self.assertEqual(minimum_macos(legacy+'\n'+modern),'13.0')
+        self.assertIsNone(minimum_macos('Not a load command'))
+
+    def test_deployment_comparison_is_numeric(self):
+        self.assertLess(version_tuple('10.9'),version_tuple('10.13'))
+        self.assertEqual(version_tuple('13'),version_tuple('13.0.0'))
 
 
 if __name__ == '__main__': unittest.main()
