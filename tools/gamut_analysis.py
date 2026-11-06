@@ -22,10 +22,10 @@ from lcms_float import LittleCMS, LAB_DBL
 PROJECTIONS = ((1, 2),)  # a*/b* seen from above
 
 
-def lab_values(profile, values):
+def lab_values(profile, values, bits=8):
     mode = profile_mode(profile)
     channels = {'RGB': 3, 'CMYK': 4, 'L': 1, 'LAB': 3}[mode]
-    values = np.ascontiguousarray(values, dtype=np.uint8).reshape(-1, channels)
+    values = np.ascontiguousarray(values, dtype=np.uint16 if bits==16 else np.uint8).reshape(-1, channels)
     output = np.empty((len(values), 3), dtype=np.float64)
     cms = LittleCMS()
     lib = cms.lib
@@ -44,11 +44,12 @@ def lab_values(profile, values):
         if mode == 'LAB':
             # Pillow's public getpixel() uses Lab8 with a*/b* offset by 128.
             values = values.astype(np.float64)
-            values[:, 0] *= 100 / 255
+            values[:, 0] *= 100 / (65535 if bits==16 else 255)
+            if bits==16: values[:, 1:] *= 255/65535
             values[:, 1:] -= 128
             input_type = LAB_DBL
         else:
-            input_type = ({'RGB': 4, 'CMYK': 6, 'L': 3}[mode] << 16) | (channels << 3) | 1
+            input_type = ({'RGB': 4, 'CMYK': 6, 'L': 3}[mode] << 16) | (channels << 3) | (2 if bits==16 else 1)
         # Fixed absolute colorimetry, no BPC: compare all stages in physical D50
         # coordinates, independently of the selected conversion/proof intent.
         transform = lib.cmsCreateTransform(src, input_type, dst, LAB_DBL, 3, 0x0100 | 0x0040)
@@ -116,6 +117,7 @@ def analyze(image, source, working, printer, intent, bpc, position=None, cache=N
     result['pixel'] = [x, y]
     if pixel.mode in ('RGBA', 'LA'):
         result['alpha'] = pixel.getchannel('A').getpixel((0, 0))
+        result['alphaMax'] = 65535 if getattr(pixel,'bits',8)==16 else 255
         pixel = pixel.convert('RGB' if pixel.mode == 'RGBA' else 'L')
     staged = stage(pixel, source, working, intent, bpc)
     stages = [('source', pixel, source), ('working', staged, working)]
@@ -126,7 +128,7 @@ def analyze(image, source, working, printer, intent, bpc, position=None, cache=N
     for role, sample, profile in stages:
         raw = sample.getpixel((0, 0))
         raw = [raw] if isinstance(raw, int) else list(raw)
-        lab = lab_values(profile, [raw])[0]
+        lab = lab_values(profile, [raw],bits=getattr(sample,'bits',8))[0]
         if first is None:
             first = lab
         result['points'].append(dict(role=role, channels=raw, mode=sample.mode,
@@ -144,6 +146,7 @@ def colour_cloud(image, source, working, printer, intent, bpc, max_samples=65536
     from PIL import Image, ImageCms
     from softproof_engine import stage
     mode = image.mode
+    bits=getattr(image,'bits',8); maximum=65535 if bits==16 else 255
     channels = len(image.getbands())
     count = image.width * image.height
     size = min(count, max_samples)
@@ -157,7 +160,7 @@ def colour_cloud(image, source, working, printer, intent, bpc, max_samples=65536
     raw = np.asarray(image).reshape(count, channels)[indices]
     weights = np.ones(len(raw), dtype=float)
     if mode in ('RGBA','LA'):
-        weights = raw[:,-1].astype(float)/255
+        weights = raw[:,-1].astype(float)/maximum
         raw = raw[:,:-1]; mode = 'RGB' if mode=='RGBA' else 'L'
     identity = hashlib.sha256(str((image.size,image.mode)).encode()+raw.tobytes()+weights.tobytes()).hexdigest()
     raw, weights = raw[weights>0], weights[weights>0]
@@ -165,12 +168,16 @@ def colour_cloud(image, source, working, printer, intent, bpc, max_samples=65536
         return dict(identity=identity, ids=[], counts=[], sampled=min(count,max_samples), total=count, stages=[])
     # Quantise only for grouping. The chosen representative retains its exact
     # original channels and follows the same conversion chain as image export.
-    keys = (raw//16).astype(np.int64) @ (16**np.arange(raw.shape[1],dtype=np.int64))
+    keys = (raw//(4096 if bits==16 else 16)).astype(np.int64) @ (16**np.arange(raw.shape[1],dtype=np.int64))
     ids, first, inverse = np.unique(keys, return_index=True, return_inverse=True)
     frequencies = np.bincount(inverse, weights=weights)
     selected = np.lexsort((ids,-frequencies))[:max_points]
-    values = np.ascontiguousarray(raw[first[selected]], dtype=np.uint8)
-    representative = Image.frombytes(mode,(len(values),1),values.tobytes())
+    values = np.ascontiguousarray(raw[first[selected]], dtype=np.uint16 if bits==16 else np.uint8)
+    if bits==16:
+        from image16 import Image16
+        representative = Image16(values.reshape(1,len(values),-1),mode)
+    else:
+        representative = Image.frombytes(mode,(len(values),1),values.tobytes())
     staged = stage(representative,source,working,intent,bpc)
     stages = [('source',representative,source),('working',staged,working)]
     if printer:
@@ -180,7 +187,7 @@ def colour_cloud(image, source, working, printer, intent, bpc, max_samples=65536
     for role, sample, profile in stages:
         device = np.asarray(sample).reshape(len(values),-1)
         rgb = np.asarray(process(sample,profile,delivery,'RGB',1,False)).reshape(-1,3)
-        result.append(dict(role=role,lab=lab_values(profile,device).tolist(),rgb=rgb.tolist()))
+        result.append(dict(role=role,lab=lab_values(profile,device,bits=bits).tolist(),rgb=np.rint(rgb.astype(float)/(257 if bits==16 else 1)).astype(int).tolist()))
     return dict(identity=identity,ids=ids[selected].tolist(),counts=frequencies[selected].tolist(),
                 sampled=min(count,max_samples),total=count,representedWeight=float(frequencies[selected].sum()),
                 colourSpace='Display P3' if display is not None else 'sRGB', stages=result)

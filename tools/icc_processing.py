@@ -37,8 +37,12 @@ def process(image, source, target, mode, intent, bpc, assign=False):
         # introduce substantial dark-tone errors with some printer LUTs.
         flags = ImageCms.Flags.NOOPTIMIZE
         if bpc: flags |= ImageCms.Flags.BLACKPOINTCOMPENSATION
-        result = ImageCms.profileToProfile(base, source, target, renderingIntent=intent,
-                                          outputMode=mode, flags=flags)
+        if getattr(base,'bits',8)==16:
+            from image16 import transform16
+            result=transform16(base,source,target,mode,intent,bpc)
+        else:
+            result = ImageCms.profileToProfile(base, source, target, renderingIntent=intent,
+                                              outputMode=mode, flags=flags)
     if alpha is not None:
         if result.mode not in ('RGB', 'L'):
             raise ValueError('Transparens kan endast bevaras för RGB eller gråskala.')
@@ -58,6 +62,8 @@ def save_image(image, destination, original, dpi=None):
     allowed = {'TIFF': ('RGB', 'RGBA', 'CMYK', 'L', 'LA', 'LAB'), 'PNG': ('RGB', 'RGBA', 'L', 'LA'), 'JPEG': ('RGB', 'CMYK', 'L')}
     if image.mode not in allowed[fmt]:
         raise ValueError(f'{fmt} stöder inte {image.mode}. Välj TIFF eller en annan färgrymd.')
+    if getattr(image,'bits',8)==16 and fmt=='JPEG':
+        raise ValueError('16-bitarsbilder måste sparas som TIFF eller PNG. JPEG stöder bara 8 bitar.')
     options = {'icc_profile': image.info['icc_profile']}
     if dpi:
         options['dpi'] = dpi

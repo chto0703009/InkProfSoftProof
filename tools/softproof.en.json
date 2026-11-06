@@ -123,5 +123,15 @@
   "Visa förflyttning": "Show movement",
   "Återställ 3D-vy": "Reset 3D view",
   "3D: %@ vanliga färggrupper ur %@ samplade pixlar. Dra för att rotera, rulla för att zooma. Pilar visar föregående → nytt läge.": "3D: %@ common colour groups from %@ sampled pixels. Drag to rotate, scroll to zoom. Arrows show previous → new positions.",
-  "3D visar bildens vanligaste samplade färggrupper, inte hela profilens omfång. Punktstorlek anger ungefärlig förekomst. L* är höjd; a* är grönt–rött, b* blått–gult. Punkternas skärmfärger är approximativa.": "3D shows the image’s most common sampled colour groups, not the full profile gamut. Point size indicates approximate frequency. L* is height; a* is green–red, b* blue–yellow. Screen colours are approximate."
+  "3D visar bildens vanligaste samplade färggrupper, inte hela profilens omfång. Punktstorlek anger ungefärlig förekomst. L* är höjd; a* är grönt–rött, b* blått–gult. Punkternas skärmfärger är approximativa.": "3D shows the image’s most common sampled colour groups, not the full profile gamut. Point size indicates approximate frequency. L* is height; a* is green–red, b* blue–yellow. Screen colours are approximate.",
+  " · %@ bitar/kanal": " · %@ bits/channel",
+  "Förhandsvisning och export: full upplösning, 8 eller 16 bitar/kanal • Pappersvitt och trycksvärta påverkar bara simuleringen": "Preview and export: full resolution, 8 or 16 bits/channel • Paper white and black ink affect only the preview",
+  " · Alfa %@/%@ (prov före bakgrundsblandning)": " · Alpha %@/%@ (sample before compositing)",
+  "16-bitarsbilder måste sparas som TIFF eller PNG. JPEG stöder bara 8 bitar.": "16-bit images must be saved as TIFF or PNG. JPEG only supports 8 bits.",
+  "Endast 8 eller osignerade 16 bitar per kanal stöds; inte 32 bitar eller flyttal.": "Only 8-bit or unsigned 16-bit channels are supported; not 32-bit or floating point.",
+  "16-bitars TIFF stöder RGB, CMYK eller gråskala. Konvertera andra färgmodeller först.": "16-bit TIFF supports RGB, CMYK or grayscale. Convert other colour models first.",
+  "16-bitars Lab-export stöds inte. Välj en RGB- eller CMYK-profil.": "16-bit Lab export is not supported. Choose an RGB or CMYK profile.",
+  "TIFF-bildens extra kanaler är inte entydigt markerade som alfa.": "The TIFF extra channels are not unambiguously marked as alpha.",
+  "Bildtypen stöds inte. Använd RGB, CMYK eller gråskala med 8 eller 16 bitar per kanal, eller 8-bitars Lab.": "Unsupported image type. Use RGB, CMYK or grayscale with 8 or 16 bits/channel, or 8-bit Lab.",
+  "JPEG-bilder stöds endast med 8 bitar per kanal. Använd TIFF eller PNG för 16 bitar.": "JPEG input is supported only at 8 bits/channel. Use TIFF or PNG for 16 bits."
 }

@@ -1,6 +1,6 @@
 # SoftProf
 
-Handbok - version 2.3.1 - 6 november 2026
+Handbok - version 2.4.0 - 6 november 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 eller senare (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ SoftProf jämför en bild med en beräknad simulering av dess utskrift. Du kan u
 
 ### Installera appen
 
-Öppna `SoftProf-2.3.1-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar för **macOS 14 eller senare**. Apple Silicon är ARM64; Intel är x86_64. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
+Öppna `SoftProf-2.4.0-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar för **macOS 14 eller senare**. Apple Silicon är ARM64; Intel är x86_64. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
 
 Paketet är ad hoc-signerat men saknar Developer ID-signering och Apple-notarisering. Om macOS blockerar första starten, granska appen i **Systeminställningar > Integritet och säkerhet > Öppna ändå**. DMG-filen innehåller båda handböckerna, GPL-licensen och appens källkod.
 
@@ -58,7 +58,7 @@ Olika metoder kan ge samma resultat när profilen inte har skilda mappningar.
 
 **Simulera pappersvitt** är en separat skärminställning. Den väljer absolut kolorimetrisk återgivning från proofprofil till visningsrymd; konverteringsmetoden till skrivaren är ett eget led. Inställningen påverkar förhandsvisningen, inte de sparade skrivarvärdena.
 
-**Simulera trycksvärta** bevarar skrivarprofilens förutsagda svartnivå. Stäng av valet, med pappersvitt avstängt, för att mappa svart till skärmsvart. Pappersvitt aktiverar även trycksvärta. Dessa visningsval ändrar inte exporten. Förhandsvisningen använder samma 8-bitars skrivarvärden som exporten; LittleCMS optimering är avstängd för att undvika extra interpolationsfel. JPEG-export kan ge ytterligare förändringar.
+**Simulera trycksvärta** bevarar skrivarprofilens förutsagda svartnivå. Stäng av valet, med pappersvitt avstängt, för att mappa svart till skärmsvart. Pappersvitt aktiverar även trycksvärta. Dessa visningsval ändrar inte exporten. Förhandsvisningen använder samma 8- eller 16-bitars skrivarvärden som exporten; LittleCMS optimering är avstängd för att undvika extra interpolationsfel. JPEG-export kan ge ytterligare förändringar.
 
 ### Skärmens färghantering
 
@@ -84,7 +84,7 @@ Klick i en låst referens följer fortfarande originalpixeln genom de **aktuella
 
 ### Läs värdena för varje steg
 
-Färgomfångsfönstret redovisar källvärden, arbetsfärgrymd och förväntade skrivarvärden. RGB- eller CMYK-värden kan ändras medan Lab-positionen ligger nästan stilla: en färgbevarande konvertering försöker bevara färgen, inte samma tal. En förflyttning visar en beräknad färgändring, exempelvis genom ommappning till annat omfång eller 8-bitarskvantisering.
+Färgomfångsfönstret redovisar källvärden, arbetsfärgrymd och förväntade skrivarvärden. RGB- eller CMYK-värden kan ändras medan Lab-positionen ligger nästan stilla: en färgbevarande konvertering försöker bevara färgen, inte samma tal. En förflyttning visar en beräknad färgändring, exempelvis genom ommappning till annat omfång eller kvantisering.
 
 ## 4. Läs färgomfångsdiagrammet
 
@@ -96,7 +96,7 @@ Alla profiler jämförs i **CIELAB D50**. Den vanliga 2D-vyn visar a*/b*-planet 
 
 Konturerna visar käll-, arbets- och skrivarprofil. Dölj dem var för sig för en tydligare vy. Numrerade punkter och pilar följer **original > arbetsfärgrymd > förväntad utskrift**. Grå ringar visar föregående inställning för samma pixel.
 
-Sifferraderna visar L*, a*, b*, kanalvärden och **ΔE76 från originalet**. Lab beräknas genom LittleCMS med flyttalsutgång och fast absolut D50-kolorimetri. Kanalomräkningen följer samma 8-bitarsflöde som exporten. Skrivarens punkt är profilens förutsägelse, inte en uppmätt utskrift. Skärmprofilen och reglaget för pappersvitssimulering ingår inte i dessa analyskoordinater.
+Sifferraderna visar L*, a*, b*, kanalvärden och **ΔE76 från originalet**. Lab beräknas genom LittleCMS med flyttalsutgång och fast absolut D50-kolorimetri. Kanalomräkningen följer samma 8- eller 16-bitarsflöde som exporten. Skrivarens punkt är profilens förutsägelse, inte en uppmätt utskrift. Skärmprofilen och reglaget för pappersvitssimulering ingår inte i dessa analyskoordinater.
 
 ### Ungefärligt färgad bakgrund
 
@@ -112,7 +112,7 @@ Välj **Visa 3D-färgrymd**; **Visa 2D** återgår till diagrammet. Välj **Orig
 
 Markera **Visa förflyttning** och ändra arbetsfärgrymd, skrivarprofil, återgivningsmetod eller BPC i huvudfönstret. Samma representanter animeras från föregående till nya lägen; pilarna finns kvar för jämförelse. Byte av 3D-vyns steg visar också förflyttningen. Avmarkera för en statisk vy. Färgbevarande konvertering kan ge mycket små rörelser; pappersvitt och trycksvärta ändrar inte absoluta Lab-positioner.
 
-3D-vyn visar upp till 1 024 vanliga grupper ur högst 65 536 reproducerbart samplade pixlar. Närliggande källkanalvärden grupperas och en faktisk originalpixel representerar varje grupp. Punktstorleken ökar med ungefärlig samplad förekomst; helt genomskinliga pixlar utelämnas och delvis alfa viktar förekomsten. Ovanliga färger kan utelämnas. Punkterna är bildens fördelning, inte ett helt profilomfång eller volymskal. Punkternas Display P3-skärmfärger är approximativa. Originalbilderna ändras inte.
+3D-vyn visar upp till 1 024 vanliga grupper ur högst 65 536 reproducerbart samplade pixlar. Närliggande källkanalvärden grupperas och en faktisk originalpixel representerar varje grupp. De mindre punkterna gör täta områden tydligare; punktstorleken ökar fortfarande med ungefärlig samplad förekomst; helt genomskinliga pixlar utelämnas och delvis alfa viktar förekomsten. Ovanliga färger kan utelämnas. Punkterna är bildens fördelning, inte ett helt profilomfång eller volymskal. Punkternas Display P3-skärmfärger är approximativa. Originalbilderna ändras inte.
 
 <!-- cloud -->
 
@@ -134,7 +134,7 @@ Exportbilden är redan konverterad till skrivarprofilen. Skriv ut dessa värden 
 
 ### Versionens begränsningar
 
-Appen stöder en bildruta och **8 bitar per kanal**. Export bevarar hela bildens pixelmått, ICC-profil, DPI och alfa där formatet stöder det. All EXIF/XMP eller övrig metadata bevaras inte. JPEG är förstörande. Pappersvitssimuleringen bakas inte in i exporten. 16-bitars RGB i PNG/TIFF avvisas före avkodning för att undvika dold precisionsförlust. Skapa först en separat 8-bitarskopia.
+Appen stöder en bildruta och **8 eller osignerade 16 bitar per kanal**. För 16-bitarsbilder använder RGB/RGBA och gråskala/alfa TIFF eller PNG; CMYK använder TIFF. TIFF stöder okomprimerat, LZW, Deflate/ZIP och PackBits, separata kanalplan och orientering. ICC-konvertering, valda pixlar, 3D-positioner och TIFF/PNG-export bevarar 16-bitars precision. Kanalvärdena går från 0 till 65 535 i stället för 0 till 255. JPEG är bara 8 bitar och kan inte väljas för 16-bitarsoriginal. Filer med 16-bitars Lab och 32-bitars/flyttalsbilder stöds inte; en Lab-arbetsprofil fungerar fortfarande. Export bevarar pixelmått, ICC, DPI och stödd alfa, inte all EXIF/XMP. Pappersvitt och trycksvärta bakas inte in i exporten.
 
 En lyckad export eller en liten förutsagd ΔE visar inte uppmätt utskriftsnoggrannhet. Bedöm viktiga arbeten med en korrekt förberedd fysisk provutskrift.
 

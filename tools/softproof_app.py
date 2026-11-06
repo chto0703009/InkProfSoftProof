@@ -373,7 +373,7 @@ class GamutWindow:
                 getattr(plot,edge)().constraintEqualToAnchor_(getattr(self.canvas,edge)()).setActive_(True)
         self.message = ui.label('Klicka i bilden för att välja ett färgprov.', True)
         self.values = ui.label(wrap=True, size=12); self.values.setFont_(A.NSFont.monospacedSystemFontOfSize_weight_(12, A.NSFontWeightRegular))
-        self.values.setMaximumNumberOfLines_(5)
+        self.values.setMaximumNumberOfLines_(8)
         self.profiles = ui.label(wrap=True, size=11); self.profiles.setMaximumNumberOfLines_(3)
         note = ui.label('Konturer: ungefärliga konvexa ytterhöljen av samplade ICC-värden, projicerade på a*/b*-planet. De visar inte exakt om en färg ryms. Grå ringar: föregående inställning för samma pixel. Lab-punkterna visar profilernas absoluta D50-värden; skärm och pappersvitssimulering ingår inte.', True, 11)
         ui.bind(note, lambda: ui.text('3D visar bildens vanligaste samplade färggrupper, inte hela profilens omfång. Punktstorlek anger ungefärlig förekomst. L* är höjd; a* är grönt–rött, b* blått–gult. Punkternas skärmfärger är approximativa.' if self.is3d else 'Konturer: ungefärliga konvexa ytterhöljen av samplade ICC-värden, projicerade på a*/b*-planet. De visar inte exakt om en färg ryms. Grå ringar: föregående inställning för samma pixel. Lab-punkterna visar profilernas absoluta D50-värden; skärm och pappersvitssimulering ingår inte.'))
@@ -438,7 +438,7 @@ class GamutWindow:
             pixel = response.get('pixel')
             text = (ui.text('Originalpixel x=%@, y=%@ · Pilar: original → arbetsfärgrymd → förväntad utskrift', pixel[0]+1, pixel[1]+1)
                     if pixel else ui.text('Klicka i någon av bildvyerna för att följa en färg.'))
-            if 'alpha' in response: text += ui.text(' · Alfa %@/255 (prov före bakgrundsblandning)', response['alpha'])
+            if 'alpha' in response: text += ui.text(' · Alfa %@/%@ (prov före bakgrundsblandning)', response['alpha'], response.get('alphaMax',255))
             return text
         ui.bind(self.message, message)
         def values():
@@ -532,7 +532,9 @@ class Controller:
             self.ui.bind(self.printer_label, lambda: Path(self.printer).name)
             self.working.selectItemAtIndex_(1)
             self.settings_changed()
-            later(40, self.smoke_timeout)
+            # The integration check repeatedly serialises full 16-bit TIFF
+            # references, which is substantially slower under Rosetta.
+            later(120, self.smoke_timeout)
 
     def build(self):
         ui = self.ui
@@ -584,7 +586,7 @@ class Controller:
             execution = ui.text({'native':'Direkt (native)', 'rosetta':'Via Rosetta (Intel på Apple Silicon)', 'unknown':'Okänd'}[self.runtime['execution']])
             return ui.text('Dator: %@ · Python: %@ · Körning: %@', host, self.runtime['process'], execution)
         ui.bind(self.runtime_label, runtime_text)
-        note = ui.label('Förhandsvisning och export: full upplösning, 8 bitar/kanal • Pappersvitt och trycksvärta påverkar bara simuleringen', True, 11)
+        note = ui.label('Förhandsvisning och export: full upplösning, 8 eller 16 bitar/kanal • Pappersvitt och trycksvärta påverkar bara simuleringen', True, 11)
         for view in (self.status, self.display_label, self.runtime_label, note): body.addArrangedSubview_(view)
         for view in (panes, self.status, self.display_label, self.runtime_label, note): view.widthAnchor().constraintEqualToAnchor_constant_(body.widthAnchor(), -32).setActive_(True)
         spacer = A.NSView.alloc().initWithFrame_(R(0, 0, 1, 1))
@@ -746,11 +748,13 @@ class Controller:
             self.original, self.proof = image('original.png'), image('proof.png')
             if self.original is None or self.proof is None: self.fail_smoke('Missing preview data'); return
             self.original_size = (response['width'], response['height'])
+            self.image_bits = response.get('bits',8)
             if self.args.smoke_test:
                 representation = self.proof.representations()[0]
                 assert (representation.pixelsWide(), representation.pixelsHigh()) == self.original_size
+                if self.image_bits==16: assert representation.bitsPerSample() >= 16
             source, embedded = response['source'], response['embedded']
-            self.original_caption = lambda: source+' · '+self.ui.text('inbäddad källprofil' if embedded else 'tilldelad källprofil')
+            self.original_caption = lambda: source+' · '+self.ui.text('inbäddad källprofil' if embedded else 'tilldelad källprofil')+self.ui.text(' · %@ bitar/kanal',response.get('bits',8))
             self.proof_caption = caption
             if self.reference is None:
                 self.left.set_image(self.original, self.original_size); self.ui.bind(self.left.detail, self.original_caption)
@@ -825,7 +829,7 @@ class Controller:
     def export_image(self, sender=None):
         if not self.ready or not self.printer or self.exporting: return
         panel = A.NSSavePanel.savePanel(); panel.setTitle_(self.ui.text('Spara bild konverterad till skrivarprofilen'))
-        panel.setPrompt_(self.ui.text('Spara')); panel.setAllowedFileTypes_(['tif','tiff','png','jpg','jpeg'])
+        panel.setPrompt_(self.ui.text('Spara')); panel.setAllowedFileTypes_(['tif','tiff','png'] if getattr(self,'image_bits',8)==16 else ['tif','tiff','png','jpg','jpeg'])
         panel.setNameFieldStringValue_(Path(self.path).stem+('_print.tif' if self.ui.language=='en' else '_utskrift.tif'))
         panel.setMessage_(self.ui.text('Sparar full upplösning med skrivarprofilen inbäddad. Skriv ut utan ytterligare färgkonvertering. Skärmens simulering av pappersvitt sparas inte.'))
         if panel.runModal() != A.NSModalResponseOK: return
@@ -934,7 +938,9 @@ class Controller:
     def smoke_exported(self, result, output):
         if not result.get('ok'): self.fail_smoke(result); return
         from PIL import Image
-        from softproof_engine import load_profile
+        from softproof_engine import load_profile, load_image
+        reloaded,_,_=load_image(output.with_suffix('.tif'))
+        assert getattr(reloaded,'bits',8)==self.image_bits
         with Image.open(output.with_suffix('.tif')) as saved:
             assert saved.size == self.original_size
             assert saved.info['icc_profile'] == Path(self.printer).read_bytes()

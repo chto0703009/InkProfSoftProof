@@ -10,3 +10,5 @@ pyobjc-core==13.0
 pyobjc-framework-Cocoa==13.0
 pyobjc-framework-Quartz==13.0
 setuptools==84.2.1
+tifffile==2026.10.15
+imagecodecs==2026.10.10

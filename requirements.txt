@@ -4,3 +4,5 @@ numpy==2.3.2
 pyobjc-core==13.0
 pyobjc-framework-Cocoa==13.0
 pyobjc-framework-Quartz==13.0
+tifffile==2026.10.15
+imagecodecs==2026.10.10

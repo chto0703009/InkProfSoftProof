@@ -2,14 +2,14 @@
 
 A Python macOS application for comparing ICC colour-space conversions and simulating printer/paper output. Compare the original and a soft proof side by side, lock an A/B reference, and click an image to follow a colour through the source, working and printer profiles in CIELAB D50.
 
-**Version:** 2.3.1
+**Version:** 2.4.0
 **Author:** Christer Törnkvist
 **Contact:** [christer@borgasundsfotografiska.se](mailto:christer@borgasundsfotografiska.se)
 **License:** [GNU GPL version 3 or later](LICENSE) (`GPL-3.0-or-later`). No warranty. See [license scope](LICENSE_SCOPE.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## Install
 
-Download the installer from [GitHub Releases](https://github.com/chto0703009/SoftProf/releases/latest). The file is `SoftProf-2.3.1-macos.dmg` for **macOS 14 or later**. It contains two separately labelled apps, not one universal binary: **SoftProf - Apple Silicon.app** (ARM64) and **SoftProf - Intel.app** (x86_64).
+Download the installer from [GitHub Releases](https://github.com/chto0703009/SoftProf/releases/latest). The file is `SoftProf-2.4.0-macos.dmg` for **macOS 14 or later**. It contains two separately labelled apps, not one universal binary: **SoftProf - Apple Silicon.app** (ARM64) and **SoftProf - Intel.app** (x86_64).
 
 1. Open the DMG and drag **only the app matching your Mac** to Applications: **Apple Silicon** for an Apple-chip Mac (M1/M2/M3 etc), or **Intel** for an Intel Mac.
 2. Eject the disk image and launch the app from Applications.
@@ -53,7 +53,7 @@ The gamut window switches between the existing 2D diagram and a rotatable 3D col
 
 The app uses Pillow/LittleCMS for ICC processing and PyObjC for AppKit/ColorSync display. Tagged Display P3 previews are adapted to the current monitor by macOS. Display P3 is an intermediate display space and can limit colours beyond its gamut.
 
-This version supports one image frame and **8 bits per channel**. Previews retain full pixel dimensions, including at 100% zoom. Larger files take more memory and processing time. RGB PNG/TIFF files above 8 bits per channel are rejected before decoding; create a separate 8-bit copy first. Export uses the full image dimensions, still at 8 bits per channel. Export preserves ICC, DPI and supported transparency, not all source metadata. JPEG is lossy.
+This version supports one image frame and **8 or unsigned 16 bits per channel**. RGB/RGBA and grayscale/alpha 16-bit input use TIFF or PNG; 16-bit CMYK uses TIFF. TIFF supports uncompressed, LZW, Deflate/ZIP and PackBits data, including separate planes and orientation. ICC conversion, pixel samples, 3D Lab positions and TIFF/PNG export preserve 16-bit precision. JPEG remains 8-bit only and is rejected for 16-bit sources. File-based 16-bit Lab and 32-bit/floating-point images are not supported; a Lab working profile can still be used internally. Previews retain full pixel dimensions, including at 100% zoom. Larger files take more memory and processing time. Export preserves ICC, DPI and supported transparency, not all source metadata. JPEG is lossy.
 
 Gamut outlines are convex envelopes of sampled device values projected onto a plane. They are approximate, may overestimate concave gamut regions and do not provide exact in/out-of-gamut classification. CMYK sampling does not impose a separate total ink limit. Printed Lab positions are profile predictions, not measurements. A screen proof cannot establish that the physical print chain is colour unmanaged.
 
@@ -69,7 +69,7 @@ python3.13 -m venv .venv
 
 Alternatively, double-click `Starta SoftProf.command` after creating the environment. `tools/launch_softproof.py` creates a development app launcher that uses this environment. It is separate from the self-contained installer.
 
-Core modules are `tools/icc_processing.py`, `tools/softproof_engine.py`, `tools/gamut_analysis.py`, `analysis/lcms_float.py` and `tools/runtime_architecture.py`. The GUI is `tools/softproof_app.py`; presentation strings are in `tools/softproof.en.json`. No Swift source or compiler is required.
+Core modules are `tools/image16.py`, `tools/icc_processing.py`, `tools/softproof_engine.py`, `tools/gamut_analysis.py`, `analysis/lcms_float.py` and `tools/runtime_architecture.py`. The GUI is `tools/softproof_app.py`; presentation strings are in `tools/softproof.en.json`. No Swift source or compiler is required.
 
 [Independent Photoshop comparison and remaining limits](docs/colour-validation.md). Printer transforms disable LittleCMS optimisation to avoid additional dark-tone interpolation errors.
 

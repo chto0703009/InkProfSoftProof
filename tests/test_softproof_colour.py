@@ -51,7 +51,7 @@ class ColourTests(unittest.TestCase):
                 self.assertEqual(actual.width, result['previewWidth'])
             self.assertEqual(result['width'], 2002)
 
-    def test_16bit_rgb_is_rejected_before_precision_is_lost(self):
+    def test_16bit_rgb_is_loaded_without_precision_loss(self):
         import struct
         import zlib
         def chunk(kind, data):
@@ -69,8 +69,9 @@ class ColourTests(unittest.TestCase):
             for path in (png,tiff):
                 with self.subTest(format=path.suffix):
                     before = path.read_bytes()
-                    with self.assertRaisesRegex(ValueError, 'mer än 8 bitar'):
-                        engine.load_image(path, 'srgb')
+                    loaded,_,_=engine.load_image(path,'srgb')
+                    self.assertEqual(loaded.bits,16)
+                    self.assertEqual(loaded.getpixel((0,0)),(4660,22136,39612))
                     self.assertEqual(path.read_bytes(), before)
 
     def test_default_preview_retains_full_pixel_dimensions(self):

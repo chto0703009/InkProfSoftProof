@@ -11,6 +11,8 @@ The full license is in LICENSE. Dependencies keep their own licenses.
 | Python | 3.13.6 | PSF license and bundled notices; application runtime |
 | Pillow | 12.3.0 | MIT-CMU and bundled notices; image I/O and ICC transforms |
 | LittleCMS | as bundled with Pillow | MIT; ICC conversion and float Lab evaluation |
+| tifffile | 2026.10.15 | BSD-3-Clause; 16-bit TIFF metadata and lossless I/O |
+| imagecodecs | 2026.10.10 | BSD-3-Clause plus bundled codec notices; 16-bit PNG and TIFF compression |
 | NumPy | 2.3.2 | BSD and bundled notices; numerical gamut analysis |
 | PyObjC core, Cocoa and Quartz | 13.0 | MIT; Python bridge to macOS AppKit/ColorSync |
 | PyInstaller | 6.22.3 | GPL with bootloader exception; standalone packaging |

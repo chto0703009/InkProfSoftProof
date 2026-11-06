@@ -1,6 +1,6 @@
 # SoftProf
 
-User guide - version 2.3.1 - 6 November 2026
+User guide - version 2.4.0 - 6 November 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 or later (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ SoftProf compares an image with a prediction of its printed appearance. It helps
 
 ### Install the app
 
-Open `SoftProf-2.3.1-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps for **macOS 14 or later**. Apple Silicon is ARM64; Intel is x86_64. Install only the matching app. Python and the required libraries are included; the development project is not needed.
+Open `SoftProf-2.4.0-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps for **macOS 14 or later**. Apple Silicon is ARM64; Intel is x86_64. Install only the matching app. Python and the required libraries are included; the development project is not needed.
 
 The package is ad hoc signed, but not Developer ID signed or Apple-notarized. If macOS blocks the first launch, review it in **System Settings > Privacy & Security > Open Anyway**. The DMG includes both manuals, the GPL license and application source.
 
@@ -58,7 +58,7 @@ Different intents can produce the same result when the profile does not provide 
 
 **Simulate paper white** is a separate screen-proof setting. It selects absolute colorimetric proof-to-display rendering; the selected printer conversion intent remains a separate stage. This setting affects the preview, not the saved printer pixels.
 
-**Simulate black ink** preserves the printer profile’s predicted black. Turn it off, with paper white off, to map black to screen black. Paper-white simulation also enables black-ink simulation. These viewing choices do not change export. The preview uses the same 8-bit printer values as export; LittleCMS optimisation is disabled to avoid extra interpolation errors. JPEG export can introduce additional changes.
+**Simulate black ink** preserves the printer profile’s predicted black. Turn it off, with paper white off, to map black to screen black. Paper-white simulation also enables black-ink simulation. These viewing choices do not change export. The preview uses the same 8- or 16-bit printer values as export; LittleCMS optimisation is disabled to avoid extra interpolation errors. JPEG export can introduce additional changes.
 
 ### Screen colour management
 
@@ -84,7 +84,7 @@ Clicking a locked reference still follows that original pixel through the **curr
 
 ### Read the stage values
 
-The gamut window reports source, working-space and predicted printer values. RGB or CMYK channel numbers may change while the Lab position stays almost unchanged: a colour-preserving conversion aims to keep the colour, not the same numbers. A movement indicates a predicted colour change, for example from gamut mapping or 8-bit quantisation.
+The gamut window reports source, working-space and predicted printer values. RGB or CMYK channel numbers may change while the Lab position stays almost unchanged: a colour-preserving conversion aims to keep the colour, not the same numbers. A movement indicates a predicted colour change, for example from gamut mapping or quantisation.
 
 ## 4. Read the gamut diagram
 
@@ -96,7 +96,7 @@ All profiles are compared in **CIELAB D50**. The default 2D diagram shows the a*
 
 The contours show the source, working and printer profiles. Toggle them separately to reduce clutter. Numbered points and arrows follow **original > working space > predicted print**. Grey rings show the previous settings for the same pixel.
 
-The numerical rows show L*, a*, b*, device-channel values and **ΔE76 from the original**. Lab is evaluated through LittleCMS with floating-point output and fixed absolute D50 colourimetry. Device-channel conversions follow the same 8-bit pipeline as export. The printer point is the profile's prediction, not a measured print. The screen profile and paper-white preview toggle are not part of these analysis coordinates.
+The numerical rows show L*, a*, b*, device-channel values and **ΔE76 from the original**. Lab is evaluated through LittleCMS with floating-point output and fixed absolute D50 colourimetry. Device-channel conversions follow the same 8- or 16-bit pipeline as export. The printer point is the profile's prediction, not a measured print. The screen profile and paper-white preview toggle are not part of these analysis coordinates.
 
 ### Approximate colour background
 
@@ -112,7 +112,7 @@ Choose **Show 3D colour space**; **Show 2D** restores the existing diagram. Choo
 
 Enable **Show movement**, then change a working space, printer profile, rendering intent or BPC in the main window. The same representatives animate from the previous positions to the new ones; arrows remain for comparison. Changing the displayed stage also shows its movement. Disable the option for a static view. Colour-preserving conversions may barely move; paper-white and ink viewing toggles do not alter absolute Lab positions.
 
-The 3D view shows up to 1,024 frequent groups from at most 65,536 deterministic stratified pixel samples. Nearby source channel values share a group; an actual source pixel represents each group. Point size increases with approximate sampled frequency; fully transparent pixels are omitted and partial alpha weights frequency. Rare colours may be omitted. The points are an image distribution, not a solid profile-gamut shell. Their Display P3 screen colours are approximate. Original photographs are unchanged.
+The 3D view shows up to 1,024 frequent groups from at most 65,536 deterministic stratified pixel samples. Nearby source channel values share a group; an actual source pixel represents each group. The smaller points improve visibility in dense regions; point size still increases with approximate sampled frequency; fully transparent pixels are omitted and partial alpha weights frequency. Rare colours may be omitted. The points are an image distribution, not a solid profile-gamut shell. Their Display P3 screen colours are approximate. Original photographs are unchanged.
 
 <!-- cloud -->
 
@@ -134,7 +134,7 @@ The exported image is already converted to the printer profile. Print these valu
 
 ### Version limits
 
-The app supports one image frame and **8 bits per channel**. Export keeps full pixel dimensions, the ICC profile, DPI and supported alpha. It does not preserve all EXIF/XMP or other metadata. JPEG is lossy. Paper-white simulation is not baked into the export. 16-bit RGB PNG/TIFF inputs are rejected before decoding to prevent silent precision loss. Create a separate 8-bit copy first.
+The app supports one image frame and **8 or unsigned 16 bits per channel**. For 16-bit images, RGB/RGBA and grayscale/alpha use TIFF or PNG; CMYK uses TIFF. TIFF supports uncompressed, LZW, Deflate/ZIP and PackBits data, separate planes and orientation. ICC conversion, selected pixels, 3D positions and TIFF/PNG export retain 16-bit precision. Values range from 0 to 65,535 instead of 0 to 255. JPEG is 8-bit only and cannot be chosen for 16-bit sources. File-based 16-bit Lab and 32-bit/floating-point images are unsupported; a Lab working profile is still supported. Export retains pixel dimensions, ICC, DPI and supported alpha, not all EXIF/XMP. Paper and ink simulation are not baked into export.
 
 A successful export or small predicted ΔE is not evidence of measured print accuracy. Assess important work with a correctly prepared physical test print.
 

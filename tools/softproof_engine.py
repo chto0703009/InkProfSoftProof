@@ -38,13 +38,17 @@ def load_image(path, source_path=None):
                 header = stream.read(26)
             high_depth = len(header) == 26 and header[24] > 8
         else:
+            if opened.format=='JPEG' and getattr(opened,'bits',8)!=8:
+                raise ValueError('JPEG-bilder stöds endast med 8 bitar per kanal. Använd TIFF eller PNG för 16 bitar.')
             high_depth = False
         if high_depth:
-            raise ValueError('Bilder med mer än 8 bitar per kanal stöds inte. Skapa en separat 8-bitarskopia först; originalet ändras inte.')
-        if opened.mode not in ('RGB', 'RGBA', 'CMYK', 'L', 'LA', 'LAB'):
-            raise ValueError('Denna version stöder 8 bitar per kanal: RGB, CMYK, gråskala eller Lab. Exportera andra bildtyper först.')
-        image = ImageOps.exif_transpose(opened)
-        image.load()
+            from image16 import read_image16
+            image=read_image16(path,opened)
+        elif opened.mode not in ('RGB', 'RGBA', 'CMYK', 'L', 'LA', 'LAB'):
+            raise ValueError('Bildtypen stöds inte. Använd RGB, CMYK eller gråskala med 8 eller 16 bitar per kanal, eller 8-bitars Lab.')
+        else:
+            image = ImageOps.exif_transpose(opened)
+            image.load()
     embedded = image.info.get('icc_profile')
     if embedded:
         source = ImageCms.ImageCmsProfile(io.BytesIO(embedded))
@@ -93,7 +97,7 @@ def run(request):
     intent, bpc = request.get('intent', 1), request.get('bpc', True)
     if intent not in (0, 1, 3):
         raise ValueError('Ogiltig återgivningsmetod.')
-    metadata = dict(width=image.width, height=image.height, mode=image.mode,
+    metadata = dict(width=image.width, height=image.height, mode=image.mode, bits=getattr(image,'bits',8),
                     source=describe(source), embedded=embedded, working=describe(working),
                     printer=describe(printer) if printer else None)
     if request.get('action') == 'gamut':

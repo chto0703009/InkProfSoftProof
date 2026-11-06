@@ -36,7 +36,7 @@ class CloudPlot(A.NSView):
         factory = (A.NSColor.colorWithDisplayP3Red_green_blue_alpha_ if cloud.get('colourSpace')=='Display P3'
                    else A.NSColor.colorWithSRGBRed_green_blue_alpha_)
         self.colors=[factory(r/255,g/255,b/255,1) for r,g,b in stage['rgb']] if stage else []
-        self.radii=[min(4.,.9+math.log1p(c)*.3) for c in cloud.get('counts',[])]
+        self.radii=[min(2.2,.5+math.log1p(c)*.16) for c in cloud.get('counts',[])]
         for s in stages.values():
             if s['lab']: self.extent=max(self.extent,float(np.max(np.abs(np.asarray(s['lab'])[:,1:]))))
         self.token+=1; self.start_time=time.monotonic()
