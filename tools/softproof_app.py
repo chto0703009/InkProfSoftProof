@@ -339,6 +339,8 @@ class GamutWindow:
         self.cloud_role.selectItemAtIndex_(2)
         self.movement = button(ui, 'Visa förflyttning', self.change_cloud, True)
         self.movement.setState_(A.NSControlStateValueOn)
+        self.compare_reference = button(ui, 'Jämför vänster → höger', lambda _: controller.schedule_gamut(), True)
+        body.addArrangedSubview_(stack([self.compare_reference]))
         self.reset3d = button(ui, 'Återställ 3D-vy', lambda _: self.cloud.reset_camera())
         body.addArrangedSubview_(stack([self.mode, self.cloud_role, self.movement, self.reset3d]))
         self.toggles = [button(ui, key, self.change_roles, True) for key in ROLE_KEYS]
@@ -381,7 +383,8 @@ class GamutWindow:
         self.values.setMaximumNumberOfLines_(8)
         self.profiles = ui.label(wrap=True, size=11); self.profiles.setMaximumNumberOfLines_(3)
         note = ui.label('Konturer: ungefärliga konvexa ytterhöljen av samplade ICC-värden, projicerade på a*/b*-planet. De visar inte exakt om en färg ryms. Grå ringar: föregående inställning för samma pixel. Lab-punkterna visar profilernas absoluta D50-värden; skärm och pappersvitssimulering ingår inte.', True, 11)
-        ui.bind(note, lambda: ui.text('3D visar bildens samplade färggrupper. L* ökar mot ljusare färger uppåt; a* går från grönt (−) till rött (+), b* från blått (−) till gult (+). Vid rotation följer riktningarna axlarnas märkning. Punktstorlek anger ungefärlig förekomst. Skärmfärgerna är approximativa; punkterna är inte hela profilens omfång.' if self.is3d else 'Konturer: ungefärliga konvexa ytterhöljen av samplade ICC-värden, projicerade på a*/b*-planet. De visar inte exakt om en färg ryms. Grå ringar: föregående inställning för samma pixel. Lab-punkterna visar profilernas absoluta D50-värden; skärm och pappersvitssimulering ingår inte.'))
+        self.plot_note=note
+        ui.bind(note, lambda: ui.text('L*: mörkt → ljust · a*: grönt → rött · b*: blått → gult. Dra för att rotera.' if self.is3d and self.compare_reference.state() else '3D visar bildens samplade färggrupper. L* ökar mot ljusare färger uppåt; a* går från grönt (−) till rött (+), b* från blått (−) till gult (+). Vid rotation följer riktningarna axlarnas märkning. Punktstorlek anger ungefärlig förekomst. Skärmfärgerna är approximativa; punkterna är inte hela profilens omfång.' if self.is3d else 'Konturer: ungefärliga konvexa ytterhöljen av samplade ICC-värden, projicerade på a*/b*-planet. De visar inte exakt om en färg ryms. Grå ringar: föregående inställning för samma pixel. Lab-punkterna visar profilernas absoluta D50-värden; skärm och pappersvitssimulering ingår inte.'))
         for view in (self.hint, self.canvas, self.direction, self.message, self.values, self.profiles, note):
             body.addArrangedSubview_(view); view.widthAnchor().constraintEqualToAnchor_constant_(body.widthAnchor(), -32).setActive_(True)
         self.canvas.heightAnchor().constraintGreaterThanOrEqualToConstant_(300).setActive_(True)
@@ -397,6 +400,8 @@ class GamutWindow:
 
     def direction_text(self):
         ui=self.ui
+        if self.compare_reference.state() and self.plot.data.get('referenceCloud'):
+            return ui.text('Gul pil: vänster bild → höger bild. Pilspetsen visar högerbildens färg.')
         text=ui.text('Gula pilar: tidigare läge → nytt läge. Pilspetsen visar resultatet efter byte av färgrymd eller andra inställningar.')
         if not self.movement.state():
             text=ui.text('Markera Visa förflyttning för gula pilar från tidigare läge till nytt läge vid byte av färgrymd eller inställningar.')
@@ -414,12 +419,17 @@ class GamutWindow:
     def change_cloud(self, sender=None):
         same_image=self.cloud.data.get('identity')==self.plot.data.get('cloud',{}).get('identity')
         self.previous_cloud_context=self.cloud_context if same_image else None
+        comparing=bool(self.compare_reference.state())
+        if comparing:
+            stages={s['role'] for s in self.plot.data.get('cloud',{}).get('stages',[])}
+            self.cloud_role.selectItemAtIndex_(2 if 'printer' in stages else 1)
         self.cloud.role = ROLES[self.cloud_role.indexOfSelectedItem()]
         space=self.plot.data.get('working')
         self.cloud_context=(space,self.cloud.role) if space else None
-        self.cloud.motion = bool(self.movement.state())
-        self.cloud.update_cloud(self.plot.data.get('cloud', {}), self.plot.data.get('points', []))
+        self.cloud.motion = bool(self.movement.state()) or comparing
+        self.cloud.update_cloud(self.plot.data.get('cloud', {}), self.plot.data.get('points', []), self.plot.data.get('referenceCloud') if self.compare_reference.state() else None)
         self.ui.bind(self.direction,self.direction_text)
+        self.ui.refresh()
         self.update_hint()
 
     def change_roles(self, sender=None):
@@ -438,10 +448,15 @@ class GamutWindow:
         self.update_hint(); self.plot.setNeedsDisplay_(True)
 
     def update_hint(self):
+        comparing=self.is3d and bool(self.compare_reference.state())
+        for view in (self.message,self.values,self.profiles): view.setHidden_(comparing)
+        self.compare_reference.setEnabled_(self.is3d and self.owner.reference_request is not None)
         enabled = self.plot.tint and not self.is3d
         self.background.setEnabled_(not self.is3d); self.strength.setEnabled_(enabled)
         for toggle in self.toggles: toggle.setEnabled_(not self.is3d)
         for control in (self.cloud_role,self.movement,self.reset3d): control.setEnabled_(self.is3d)
+        if comparing:
+            self.cloud_role.setEnabled_(False); self.movement.setEnabled_(False)
         self.follow_lightness.setEnabled_(enabled)
         manual = enabled and not self.follow_lightness.state()
         self.lightness_slider.setEnabled_(manual); self.lightness_value.setEnabled_(manual)
@@ -451,6 +466,8 @@ class GamutWindow:
         if self.is3d:
             cloud=self.plot.data.get('cloud',{})
             self.ui.message(self.hint, '3D: %@ vanliga färggrupper ur %@ samplade pixlar. Dra för att rotera, rulla för att zooma. Pilar visar föregående → nytt läge.', len(cloud.get('ids',[])), cloud.get('sampled',0))
+            if self.compare_reference.state():
+                self.ui.message(self.hint, 'Vänster: %@ → Höger: %@', Path(self.owner.reference_request.get('printer','')).name or self.ui.text('Arbetsfärgrymd:'), Path(self.owner.printer or '').name or self.ui.text('Arbetsfärgrymd:'))
         else:
             self.ui.message(self.hint, 'Kulörguide: a*/b* vid L*=%@. L* 0 är svart, 100 är vitt. Endast bakgrunden ändras; konturer och färgprov är oförändrade.', f'{value:.1f}')
 
@@ -532,6 +549,7 @@ class Controller:
         self.processes = {}; self.revisions = {'render': 0, 'gamut': 0}
         self.closing = False; self.ready = False; self.exporting = False
         self.path = self.printer = self.pixel = None
+        self.reference_request = None
         self.gamut = None; self.original = self.proof = self.reference = None
         self.original_caption = self.proof_caption = self.reference_caption = lambda: ''
         self.original_size = (1, 1); self.syncing = False
@@ -596,10 +614,13 @@ class Controller:
         body.addArrangedSubview_(stack([ui.label('Återgivning:'), self.intent, self.bpc, self.ink, self.paper]))
         self.pin = button(ui, 'Lås simulering som referens', self.pin_reference)
         self.compare = button(ui, 'Jämför med annan profil…', self.compare_profile)
-        self.unpin = button(ui, 'Visa original till vänster', self.clear_reference)
+        self.unpin = button(ui, 'Återställ vänster till original', self.clear_reference)
+        self.swap = button(ui, 'Byt vänster ↔ höger', self.swap_comparison)
+        self.swap.setEnabled_(False)
         self.pin.setEnabled_(False); self.unpin.setEnabled_(False)
         self.zoom = popup(ui, ('Anpassa', '25 %', '50 %', '100 %'), self.update_zoom)
-        body.addArrangedSubview_(stack([self.pin, self.compare, self.unpin, ui.label('Gemensam zoom:'), self.zoom]))
+        body.addArrangedSubview_(stack([self.pin, self.compare]))
+        body.addArrangedSubview_(stack([self.swap, self.unpin, ui.label('Gemensam zoom:'), self.zoom]))
         self.left, self.right = (Pane.alloc().initWithFrame_(R(0, 0, 600, 360)) for _ in range(2))
         panes = stack([self.left, self.right], spacing=14); panes.setDistribution_(A.NSStackViewDistributionFillEqually)
         panes.heightAnchor().constraintGreaterThanOrEqualToConstant_(260).setActive_(True)
@@ -610,7 +631,9 @@ class Controller:
         self.left.picture.on_pick = self.right.picture.on_pick = self.pick_color
         self.save = button(ui, 'Konvertera och spara…', self.export_image); self.save.setEnabled_(False)
         self.gamut_button=button(ui, 'Färgomfång…', self.show_gamut)
-        actions=stack([stack([self.save]),stack([self.gamut_button,ui.label('Klicka i bilden för att följa en färg')])],spacing=14)
+        save_spacer=A.NSView.alloc().initWithFrame_(R(0,0,1,1))
+        save_spacer.setContentHuggingPriority_forOrientation_(1,A.NSLayoutConstraintOrientationHorizontal)
+        actions=stack([stack([ui.label('Klicka i bilden för att följa en färg')]),stack([self.gamut_button,save_spacer,self.save])],spacing=14)
         actions.setDistribution_(A.NSStackViewDistributionFillEqually)
         body.addArrangedSubview_(actions)
         self.status = ui.label('Öppna en bild. Originalfilen ändras aldrig.', True, 12)
@@ -692,6 +715,8 @@ class Controller:
         path = self.dialog('Öppna bild', True)
         if not path: return
         self.path = path; self.source.selectItemAtIndex_(0); self.pixel = None
+        self.reference_request = None
+        if self.gamut: self.gamut.compare_reference.setState_(0)
         self.original = self.proof = self.reference = None
         self.ui.bind(self.image_label, lambda: Path(self.path).name)
         self.ui.message(self.left.heading, 'Original'); self.ui.message(self.left.detail, 'Bildens färger med källprofilen')
@@ -735,7 +760,7 @@ class Controller:
         if self.paper.state(): self.ink.setState_(A.NSControlStateValueOn)
         self.ink.setEnabled_(not self.paper.state())
         self.revisions['render'] += 1; self.revisions['gamut'] += 1
-        self.ready = False; self.pin.setEnabled_(False); self.save.setEnabled_(False)
+        self.ready = False; self.pin.setEnabled_(False); self.save.setEnabled_(False); self.swap.setEnabled_(False)
         for kind in ('render','gamut'):
             process=self.processes.get(kind)
             if process and process.poll() is None: process.terminate()
@@ -807,7 +832,7 @@ class Controller:
             self.right.set_image(self.proof, self.original_size); self.ui.bind(self.right.detail, caption)
             self.ui.message(self.right.heading, 'Simulerad utskrift' if self.printer else 'Efter byte av färgrymd')
             self.ui.message(self.status, 'Simuleringen är aktuell. Lås den som referens och ändra inställningar för A/B-jämförelse.' if self.printer else 'Färgrymden visas. Välj en skrivar-/pappersprofil för att simulera utskrift.')
-            self.ready = True; self.pin.setEnabled_(True); self.save.setEnabled_(bool(self.printer) and not self.exporting)
+            self.ready = True; self.pin.setEnabled_(True); self.swap.setEnabled_(self.reference_request is not None); self.save.setEnabled_(bool(self.printer) and not self.exporting)
             self.update_zoom(); self.schedule_gamut()
             if self.args.smoke_test: self.smoke_rendered()
         self.worker('render', {**self.request(),'previewLimit':1600,'originalCache':str(self.temporary/'original-cache'),'renderCache':str(self.temporary/'render-cache')}, done)
@@ -844,11 +869,38 @@ class Controller:
     def pin_reference(self, sender=None):
         if not self.ready: return
         self.reference = self.proof.copy(); self.reference_caption = self.proof_caption
+        self.reference_request = self.request().copy()
+        if self.gamut: self.schedule_gamut()
         self.left.set_image(self.reference, self.original_size); self.ui.bind(self.left.detail, self.reference_caption)
-        self.ui.message(self.left.heading, 'Låst referens'); self.unpin.setEnabled_(True); self.update_zoom()
+        self.ui.message(self.left.heading, 'Låst referens'); self.unpin.setEnabled_(True); self.swap.setEnabled_(True); self.update_zoom()
+
+    def swap_comparison(self, sender=None):
+        if not self.ready or self.reference_request is None:
+            return
+        previous = self.reference_request.copy()
+        self.reference = self.proof.copy()
+        self.reference_caption = self.proof_caption
+        self.reference_request = self.request().copy()
+        for role, menu, paths in (('source',self.source,self.source_paths),
+                                  ('working',self.working,self.working_paths)):
+            path=previous.get(role)
+            if path not in paths:
+                paths.append(path); menu.addItemWithTitle_(Path(path).name)
+            menu.selectItemAtIndex_(paths.index(path))
+        self.printer=previous.get('printer')
+        self.ui.bind(self.printer_label,lambda: Path(self.printer).name if self.printer else self.ui.text('Välj skrivarens och papperets ICC-profil'))
+        self.intent.selectItemAtIndex_((1,3,0).index(previous['intent']))
+        self.bpc.setState_(previous['bpc']); self.paper.setState_(previous['paper'])
+        self.ink.setState_(previous['ink'])
+        self.left.set_image(self.reference,self.original_size)
+        self.ui.bind(self.left.detail,self.reference_caption)
+        self.ui.message(self.left.heading,'Låst referens')
+        self.settings_changed()
 
     def clear_reference(self, sender=None):
-        self.reference = None; self.unpin.setEnabled_(False)
+        self.reference = None; self.reference_request = None; self.unpin.setEnabled_(False); self.swap.setEnabled_(False)
+        if self.gamut:
+            self.gamut.compare_reference.setState_(0); self.schedule_gamut()
         self.left.set_image(self.original, self.original_size); self.ui.bind(self.left.detail, self.original_caption)
         self.ui.message(self.left.heading, 'Original'); self.update_zoom()
 
@@ -870,6 +922,8 @@ class Controller:
         self.ui.message(self.gamut.message, 'Beräknar färgomfång och färgprov…')
         request = {**self.request(), 'action':'gamut', 'gamutCache':str(self.temporary/'gamut-cache'), 'cloud':True}
         if self.pixel is not None: request['pixel'] = self.pixel.copy()
+        if self.gamut.compare_reference.state() and self.reference_request:
+            request['reference'] = self.reference_request.copy()
         def done(response, folder):
             if revision != self.revisions['gamut']: return
             if response.get('ok'):

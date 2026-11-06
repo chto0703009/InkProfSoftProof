@@ -1,6 +1,6 @@
 # SoftProf
 
-Handbok - version 2.4.3 - 6 november 2026
+Handbok - version 2.4.6 - 6 november 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 eller senare (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ SoftProf jämför en bild med en beräknad simulering av dess utskrift. Du kan u
 
 ### Installera appen
 
-Öppna `SoftProf-2.4.3-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar: **Apple Silicon kräver macOS 14+; Intel kräver macOS 13 Ventura+**. Apple Silicon är ARM64; Intel är x86_64. Alla Intel-binärer kontrolleras mot Venturas systemkrav. Fysisk Ventura-maskin har inte testats här. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
+Öppna `SoftProf-2.4.6-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar: **Apple Silicon kräver macOS 14+; Intel kräver macOS 13 Ventura+**. Apple Silicon är ARM64; Intel är x86_64. Alla Intel-binärer kontrolleras mot Venturas systemkrav. Fysisk Ventura-maskin har inte testats här. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
 
 Paketet är ad hoc-signerat men saknar Developer ID-signering och Apple-notarisering. Om macOS blockerar första starten, granska appen i **Systeminställningar > Integritet och säkerhet > Öppna ändå**. DMG-filen innehåller båda handböckerna, GPL-licensen och appens källkod.
 
@@ -74,9 +74,11 @@ Förhandsvisningen är en ICC-märkt Display P3-bild som visas genom macOS AppKi
 
 Vänster vy börjar som originalet tolkat med källprofilen. Höger vy följer den aktuella arbetsfärgrymden och skrivarinställningarna. Utan skrivarprofil visar höger vy enbart arbetsfärgrymdens konvertering.
 
-Välj **Lås simulering som referens** för att behålla resultat A till vänster. Ändra profiler, återgivningsmetod eller kompensation för att skapa resultat B till höger. Referensens bildtext bevarar inställningarna som användes för A. **Visa original till vänster** återgår till originaljämförelsen.
+Välj **Lås simulering som referens** för att behålla resultat A till vänster. Ändra profiler, återgivningsmetod eller kompensation för att skapa resultat B till höger. Referensens bildtext bevarar inställningarna som användes för A. **Återställ vänster till original** visar originalbilden till vänster och behåller högerbildens aktuella profil och inställningar.
 
 **Jämför med annan profil…** låser aktuell simulering till vänster och öppnar profilvalet för den högra simuleringen. Bildtexterna visar respektive profil och inställningar. Fortsatta ändringar påverkar höger bild; vänster förblir låst.
+
+**Byt vänster ↔ höger** byter plats på simuleringarna tillsammans med deras profiler, arbetsfärgrymd, återgivningsmetod, BPC och pappers-/svärtinställningar. Höger sida kan redigeras; vänster förblir låst. Två byten återställer jämförelsens utgångsläge.
 
 ### Zoom och rullning
 
@@ -84,7 +86,7 @@ Båda vyerna har gemensam zoom och rullning. **Anpassa** visar hela bilden. För
 
 Nyligen använda förhandsvisningar återanvänds under sessionen (högst sex färdiga lägen). Återgång till ett sparat läge hoppar över avkodning av originalbilden och ICC-beräkning. Originalvyn återanvänds och PNG-komprimeringen är snabbare men fortfarande förlustfri. Nya inställningar beräknas på den nedskalade förhandsvisningen. Export beräknas från originalet i full upplösning.
 
-Knappen **Färgomfång…** ligger direkt under den högra bilden.
+Knappen **Färgomfång…** ligger direkt under den högra bilden. **Konvertera och spara…** ligger längst till höger på samma rad.
 
 ### Klicka för att välja färgprov
 
@@ -123,6 +125,8 @@ L*, a*, b* och ΔE visas i fasta, linjerade kolumner. Diagrammets ritning hålls
 Välj **Visa 3D-färgrymd**; **Visa 2D** återgår till diagrammet. Välj **Original**, **Arbetsfärgrymd** eller **Utskrift** i 3D-vyns meny. Dra för att rotera, rulla för att zooma eller välj **Återställ 3D-vy**. L* ökar uppåt mot ljusare färger, a* går från grönt (negativt) till rött (positivt) och b* från blått (negativt) till gult (positivt). Följ axlarnas märkning när vyn roteras. Bildens valda pixel markeras med en vit ring i valt steg. L*-reglaget för bakgrunden gäller bara 2D.
 
 Markera **Visa förflyttning** och ändra arbetsfärgrymd, skrivarprofil, återgivningsmetod eller BPC i huvudfönstret. Samma representanter animeras från föregående till nya lägen; tydligt gula pilar finns kvar för jämförelse. Pilspetsarna pekar mot det nya resultatet. Texten under diagrammet förklarar riktningen och anger arbetsfärgrymd och visat steg före och efter ändringen, även när färgrymden byts. Byte av 3D-vyns steg visar också förflyttningen. Avmarkera för en statisk vy. Färgbevarande konvertering kan ge mycket små rörelser; pappersvitt och trycksvärta ändrar inte absoluta Lab-positioner.
+
+**Jämför vänster → höger** jämför den låsta vänsterbilden med aktuell högerbild. Punkterna visar alltid högerbildens färger. En gul pil börjar vid motsvarande färgläge i vänsterbilden och slutar vid högerbildens punkt. Små pilspetsar håller punkterna synliga; referensringar visas inte. Den korta bildtexten anger båda profilerna. Byte av bilderna vänder jämförelsen. Återställning av vänsterbilden tar bort referensjämförelsen. Detta är profilernas absoluta D50-färger; skärmens pappers-/svärtsimulering ändrar inte koordinaterna.
 
 3D-vyn visar upp till 1 024 vanliga grupper ur högst 65 536 reproducerbart samplade pixlar. Närliggande källkanalvärden grupperas och en faktisk originalpixel representerar varje grupp. De mindre punkterna gör täta områden tydligare; punktstorleken ökar fortfarande med ungefärlig samplad förekomst; helt genomskinliga pixlar utelämnas och delvis alfa viktar förekomsten. Ovanliga färger kan utelämnas. Punkterna är bildens fördelning, inte ett helt profilomfång eller volymskal. Punkternas Display P3-skärmfärger är approximativa. Originalbilderna ändras inte.
 

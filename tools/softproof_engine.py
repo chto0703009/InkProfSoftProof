@@ -137,6 +137,11 @@ def run(request):
         if request.get('cloud'):
             analysis['cloud'] = colour_cloud(image, source, working, printer, intent, bpc,
                                               display=load_profile(request['display']) if request.get('display') else None)
+        if request.get('reference') and request.get('cloud'):
+            reference = dict(request['reference'], action='gamut', cloud=True,
+                             gamutCache=request.get('gamutCache'))
+            reference.pop('reference', None)
+            analysis['referenceCloud'] = run(reference)['cloud']
         return dict(ok=True, **metadata, **analysis)
     if request.get('action') == 'save':
         if printer is None:

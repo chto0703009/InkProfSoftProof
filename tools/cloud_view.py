@@ -25,12 +25,21 @@ class CloudPlot(A.NSView):
         self.yaw=-.65; self.pitch=.4; self.zoom=1.; self.setNeedsDisplay_(True)
 
     @objc.python_method
-    def update_cloud(self, cloud, samples=None):
+    def update_cloud(self, cloud, samples=None, reference=None):
         stages={s['role']:s for s in cloud.get('stages',[])}
         stage=stages.get(self.role) or stages.get('working') or stages.get('source')
         target=np.asarray(stage['lab'],dtype=float).reshape(-1,3) if stage else np.empty((0,3))
         comparable=(self.data.get('identity')==cloud.get('identity') and self.data.get('ids')==cloud.get('ids') and self.current.shape==target.shape)
         self.old=self.current.copy() if comparable and self.motion and len(target) else None
+        self.reference_points=None
+        if reference is not None:
+            reference_stage=next((s for s in reference.get('stages',[]) if s['role']==self.role),None)
+            if reference_stage and reference.get('identity')==cloud.get('identity') and reference.get('ids')==cloud.get('ids'):
+                self.reference_points=np.asarray(reference_stage['lab'],dtype=float).reshape(-1,3)
+                if len(self.reference_points): self.extent=max(self.extent,float(np.max(np.abs(self.reference_points[:,1:]))))
+                self.old=self.reference_points.copy() if self.motion else None
+            else:
+                self.old=None
         self.data=cloud; self.target=target
         self.samples=samples if samples is not None else self.samples
         factory = (A.NSColor.colorWithDisplayP3Red_green_blue_alpha_ if cloud.get('colourSpace')=='Display P3'
@@ -40,10 +49,10 @@ class CloudPlot(A.NSView):
         for s in stages.values():
             if s['lab']: self.extent=max(self.extent,float(np.max(np.abs(np.asarray(s['lab'])[:,1:]))))
         self.token+=1; self.start_time=time.monotonic()
-        self.progress=0. if self.old is not None else 1.
-        self.current=self.old.copy() if self.old is not None else target.copy()
+        self.progress=0. if self.old is not None and reference is None else 1.
+        self.current=self.old.copy() if self.progress==0. else target.copy()
         self.setNeedsDisplay_(True)
-        if self.old is not None: AppHelper.callLater(.025,self.tick,self.token)
+        if self.old is not None and reference is None: AppHelper.callLater(.025,self.tick,self.token)
 
     @objc.python_method
     def tick(self, token):
@@ -109,15 +118,15 @@ class CloudPlot(A.NSView):
                 if np.linalg.norm(b[:2]-a[:2])<1: continue
                 path.moveToPoint_((a[0],a[1]));path.lineToPoint_((b[0],b[1]))
                 dx,dy=b[0]-a[0],b[1]-a[1];length=math.hypot(dx,dy)
-                if length>8:
+                if length>5:
                     ux,uy=dx/length,dy/length
-                    path.moveToPoint_((b[0]-5*ux+2*uy,b[1]-5*uy-2*ux));path.lineToPoint_((b[0],b[1]));path.lineToPoint_((b[0]-5*ux-2*uy,b[1]-5*uy+2*ux))
+                    path.moveToPoint_((b[0]-3*ux+1.2*uy,b[1]-3*uy-1.2*ux));path.lineToPoint_((b[0],b[1]));path.lineToPoint_((b[0]-3*ux-1.2*uy,b[1]-3*uy+1.2*ux))
             path.stroke()
         projected=self.projected(self.current)
         for i in np.argsort(projected[:,2]) if len(projected) else []:
             x,y,_=projected[i];radius=self.radii[i];self.colors[i].setFill()
             A.NSBezierPath.bezierPathWithOvalInRect_(F.NSMakeRect(x-radius,y-radius,radius*2,radius*2)).fill()
-        for sample in self.samples:
+        for sample in ([] if getattr(self,'reference_points',None) is not None else self.samples):
             if sample['role']!=self.role:continue
             x,y,_=self.projected([sample['lab']])[0];white.setStroke()
             marker=A.NSBezierPath.bezierPathWithOvalInRect_(F.NSMakeRect(x-10,y-10,20,20));marker.setLineWidth_(2);marker.stroke()
