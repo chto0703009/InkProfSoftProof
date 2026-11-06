@@ -103,7 +103,7 @@ for package in ['objc', 'Foundation', 'CoreFoundation', 'AppKit', 'Quartz']:
 a = Analysis([{str(ROOT/'tools/softproof_app.py')!r}],
     pathex={[str(ROOT/'tools'),str(ROOT/'analysis')]!r},
     binaries=[], datas=[({str(ROOT/'tools/softproof.en.json')!r},'tools'),({str(ROOT/'VERSION')!r},'.'),({str(notice_dir)!r},'Notices')],
-    hiddenimports=hidden+['softproof_engine','gamut_analysis','icc_processing','lcms_float','runtime_architecture'],
+    hiddenimports=hidden+['softproof_engine','cloud_view','gamut_analysis','icc_processing','lcms_float','runtime_architecture'],
     hookspath=[], hooksconfig={{}}, runtime_hooks=[],
     excludes=['tkinter','matplotlib','scipy','cv2','pytest','IPython'], noarchive=False)
 # find_library('lcms2') can collect an unrelated Homebrew dylib.
@@ -136,13 +136,13 @@ app = BUNDLE(collection, name={APP_NAME+' - '+LABELS[TARGET]+'.app'!r}, icon={st
 
 
 def source_archive(destination):
-    paths = ['tools/softproof_app.py','tools/softproof_engine.py','tools/icc_processing.py','tools/gamut_analysis.py',
+    paths = ['tools/softproof_app.py','tools/softproof_engine.py','tools/icc_processing.py','tools/gamut_analysis.py','tools/cloud_view.py',
              'tools/runtime_architecture.py','tools/softproof.en.json','tools/build_softproof_dmg.py','tools/audit_softproof_architecture.py',
              'tools/requirements-softproof-build.txt','tools/requirements-softproof.txt','analysis/lcms_float.py',
-             'tests/test_softproof_engine.py','tests/test_softproof_colour.py','tests/test_softproof_architecture.py','docs/softproof.sv.md',
+             'tests/test_softproof_engine.py','tests/test_softproof_colour.py','tests/test_softproof_cloud.py','tests/test_softproof_architecture.py','docs/softproof.sv.md',
              'LICENSE','LICENSE_SCOPE.md','AUTHORS.md','README.md','VERSION','AGENTS.md','.gitignore','.gitattributes','.python-version','requirements.txt',
              'THIRD_PARTY_NOTICES.md','licenses/softproof-python','licenses/fonts','resources/fonts',
-             'tools/render_manuals.py','tools/validate_photoshop.py','docs/colour-validation.md','docs/colour-validation-2.2.4.json','tools/launch_softproof.py','tools/requirements-docs.txt',
+             'resources/colour-cloud-example.png','tools/render_manuals.py','tools/validate_photoshop.py','docs/colour-validation.md','docs/colour-validation-2.2.4.json','tools/launch_softproof.py','tools/requirements-docs.txt',
              'docs/softproof.en.md','output/pdf/SoftProf-Manual-sv.pdf','output/pdf/SoftProf-Manual-en.pdf',
              'Starta SoftProf.command']
     with tarfile.open(destination, 'w:gz') as archive:

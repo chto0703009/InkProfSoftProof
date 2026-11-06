@@ -132,3 +132,55 @@ def analyze(image, source, working, printer, intent, bpc, position=None, cache=N
         result['points'].append(dict(role=role, channels=raw, mode=sample.mode,
                                      lab=lab.tolist(), deltaE76=float(np.linalg.norm(lab-first))))
     return result
+
+
+def colour_cloud(image, source, working, printer, intent, bpc, max_samples=65536, max_points=1024, display=None):
+    """Stable, frequency-ranked source bins; convert actual representative pixels.
+
+    Deterministic stratified sampling without image interpolation. All stages
+    share representatives/IDs so motion compares the same source colours.
+    Counts estimate image frequency; transparent samples carry alpha weight.
+    """
+    from PIL import Image, ImageCms
+    from softproof_engine import stage
+    mode = image.mode
+    channels = len(image.getbands())
+    count = image.width * image.height
+    size = min(count, max_samples)
+    if size == count:
+        indices = np.arange(count, dtype=np.int64)
+    else:
+        # Fixed-seed stratified sampling avoids regular-grid aliasing while
+        # retaining identical samples when only conversion settings change.
+        edges = np.arange(size+1, dtype=np.int64)*count//size
+        indices = edges[:-1]+(np.random.default_rng(0).random(size)*np.diff(edges)).astype(np.int64)
+    raw = np.asarray(image).reshape(count, channels)[indices]
+    weights = np.ones(len(raw), dtype=float)
+    if mode in ('RGBA','LA'):
+        weights = raw[:,-1].astype(float)/255
+        raw = raw[:,:-1]; mode = 'RGB' if mode=='RGBA' else 'L'
+    identity = hashlib.sha256(str((image.size,image.mode)).encode()+raw.tobytes()+weights.tobytes()).hexdigest()
+    raw, weights = raw[weights>0], weights[weights>0]
+    if not len(raw):
+        return dict(identity=identity, ids=[], counts=[], sampled=min(count,max_samples), total=count, stages=[])
+    # Quantise only for grouping. The chosen representative retains its exact
+    # original channels and follows the same conversion chain as image export.
+    keys = (raw//16).astype(np.int64) @ (16**np.arange(raw.shape[1],dtype=np.int64))
+    ids, first, inverse = np.unique(keys, return_index=True, return_inverse=True)
+    frequencies = np.bincount(inverse, weights=weights)
+    selected = np.lexsort((ids,-frequencies))[:max_points]
+    values = np.ascontiguousarray(raw[first[selected]], dtype=np.uint8)
+    representative = Image.frombytes(mode,(len(values),1),values.tobytes())
+    staged = stage(representative,source,working,intent,bpc)
+    stages = [('source',representative,source),('working',staged,working)]
+    if printer:
+        stages.append(('printer',process(staged,working,printer,profile_mode(printer),intent,bpc),printer))
+    delivery = display or ImageCms.ImageCmsProfile(ImageCms.createProfile('sRGB'))
+    result=[]
+    for role, sample, profile in stages:
+        device = np.asarray(sample).reshape(len(values),-1)
+        rgb = np.asarray(process(sample,profile,delivery,'RGB',1,False)).reshape(-1,3)
+        result.append(dict(role=role,lab=lab_values(profile,device).tolist(),rgb=rgb.tolist()))
+    return dict(identity=identity,ids=ids[selected].tolist(),counts=frequencies[selected].tolist(),
+                sampled=min(count,max_samples),total=count,representedWeight=float(frequencies[selected].sum()),
+                colourSpace='Display P3' if display is not None else 'sRGB', stages=result)

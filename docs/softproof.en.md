@@ -1,6 +1,6 @@
 # SoftProf
 
-User guide - version 2.2.4 - 6 November 2026
+User guide - version 2.3.0 - 6 November 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 or later (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ SoftProf compares an image with a prediction of its printed appearance. It helps
 
 ### Install the app
 
-Open `SoftProf-2.2.4-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps for **macOS 14 or later**. Apple Silicon is ARM64; Intel is x86_64. Install only the matching app. Python and the required libraries are included; the development project is not needed.
+Open `SoftProf-2.3.0-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps for **macOS 14 or later**. Apple Silicon is ARM64; Intel is x86_64. Install only the matching app. Python and the required libraries are included; the development project is not needed.
 
 The package is ad hoc signed, but not Developer ID signed or Apple-notarized. If macOS blocks the first launch, review it in **System Settings > Privacy & Security > Open Anyway**. The DMG includes both manuals, the GPL license and application source.
 
@@ -88,7 +88,7 @@ The gamut window reports source, working-space and predicted printer values. RGB
 
 ## 4. Read the gamut diagram
 
-All profiles are compared in **CIELAB D50**. The diagram shows the a*/b* plane from above. Axis units use a common scale, expanding when necessary without shrinking as settings change.
+All profiles are compared in **CIELAB D50**. The default 2D diagram shows the a*/b* plane from above. Axis units use a common scale, expanding when necessary without shrinking as settings change.
 
 <!-- gamut -->
 
@@ -106,7 +106,17 @@ The numerical rows show L*, a*, b*, device-channel values and **ΔE76 from the o
 
 Contours are convex outer envelopes of sampled ICC device values, projected onto a plane. They merge the third dimension and may overestimate concave regions. Sampling uses 17 levels per RGB/Lab channel and 9 per CMYK channel, without a separate CMYK total-ink limit. A point inside a contour does not prove that the colour is printable at its L*.
 
-## 5. Export and print
+## 5. 3D image colour cloud
+
+Choose **Show 3D colour cloud**; **Show 2D** restores the existing diagram. Choose **Original**, **Working space** or **Print** in the cloud menu. Drag the plot to rotate, scroll to zoom, or choose **Reset 3D view**. L* is height, a* green-red and b* blue-yellow. The selected image pixel is marked with a white ring in the chosen stage. The L* background controls apply only to 2D.
+
+Enable **Show movement**, then change a working space, printer profile, rendering intent or BPC in the main window. The same representatives animate from the previous positions to the new ones; arrows remain for comparison. Changing the cloud stage also shows its movement. Disable the option for a static cloud. Colour-preserving conversions may barely move; paper-white and ink viewing toggles do not alter absolute Lab positions.
+
+The cloud shows up to 1,024 frequent groups from at most 65,536 deterministic stratified pixel samples. Nearby source channel values share a group; an actual source pixel represents each group. Point size increases with approximate sampled frequency; fully transparent pixels are omitted and partial alpha weights frequency. Rare colours may be omitted. The points are an image distribution, not a solid profile-gamut shell. Their Display P3 screen colours are approximate. Original photographs are unchanged.
+
+<!-- cloud -->
+
+## 6. Export and print
 
 Choose **Convert and save** after selecting an image and printer/paper profile. The app processes the full image via the selected working space and printer profile, then embeds the selected printer ICC file **byte for byte**. The source image cannot be overwritten.
 
@@ -130,7 +140,7 @@ A successful export or small predicted ΔE is not evidence of measured print acc
 
 A synthetic numerical comparison with Photoshop 27.11 found and corrected a dark-tone optimisation error. Remaining differences are documented in the GitHub colour-validation report. This is not a verification of Photoshop’s on-screen Proof Colors or physical print accuracy.
 
-## 6. Language, architecture and license
+## 7. Language, architecture and license
 
 ### Language and exit
 

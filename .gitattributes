@@ -1,2 +1,6 @@
 # Preserve upstream license texts verbatim, including their whitespace.
 licenses/** -whitespace
+
+# Generated documents and screenshots must not be treated as text diffs.
+*.pdf binary
+*.png binary

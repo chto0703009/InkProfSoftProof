@@ -15,6 +15,7 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, Flowable
+from reportlab.platypus import Image as PDFImage
 from PIL import Image, ImageCms
 from pypdf import PdfReader
 
@@ -111,6 +112,13 @@ def blocks(lines, language):
         if line.startswith('### '):output.append(Paragraph(markup(line[4:]),STYLES['h3']));index+=1;continue
         if line=='<!-- pipeline -->':output.append(Pipeline(language));index+=1;continue
         if line=='<!-- gamut -->':output.append(GamutIllustration(language));index+=1;continue
+        if line=='<!-- cloud -->':
+            illustration=ROOT/'resources/colour-cloud-example.png'
+            with Image.open(illustration) as picture: ratio=picture.height/picture.width
+            output.append(PDFImage(str(illustration),width=WIDTH,height=WIDTH*ratio))
+            caption=('Exempel från en syntetisk testbild. Molnet beror på vald bild och inställningar.' if language=='sv' else 'Example from a synthetic test image. The cloud depends on the selected image and settings.')
+            output.append(Paragraph(caption,STYLES['small']));index+=1;continue
+
         if line.startswith('|'):
             data=[]
             while index<len(lines) and lines[index].strip().startswith('|'):data.append(lines[index].strip());index+=1
@@ -151,7 +159,7 @@ def render(language):
         story.extend(blocks(body.splitlines(),language))
     document.build(story,onFirstPage=furniture,onLaterPages=furniture)
     reader=PdfReader(destination)
-    assert len(reader.pages)==6,(language,'Unexpected pagination',len(reader.pages))
+    assert len(reader.pages)==len(sections),(language,'Unexpected pagination',len(reader.pages))
     for page in reader.pages:
         text=page.extract_text();assert AUTHOR in text and EMAIL in text and 'GPL-3.0-or-later' in text and GITHUB.removeprefix('https://') in text
     copy=Path.home()/'Downloads'/destination.name

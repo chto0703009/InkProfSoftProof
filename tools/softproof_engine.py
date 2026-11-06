@@ -97,9 +97,12 @@ def run(request):
                     source=describe(source), embedded=embedded, working=describe(working),
                     printer=describe(printer) if printer else None)
     if request.get('action') == 'gamut':
-        from gamut_analysis import analyze
+        from gamut_analysis import analyze, colour_cloud
         analysis = analyze(image, source, working, printer, intent, bpc,
                            request.get('pixel'), request.get('gamutCache'))
+        if request.get('cloud'):
+            analysis['cloud'] = colour_cloud(image, source, working, printer, intent, bpc,
+                                              display=load_profile(request['display']) if request.get('display') else None)
         return dict(ok=True, **metadata, **analysis)
     if request.get('action') == 'save':
         if printer is None:

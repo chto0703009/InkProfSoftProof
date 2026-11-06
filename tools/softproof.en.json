@@ -117,5 +117,11 @@
   "Simulera trycksvärta": "Simulate black ink",
   " · Trycksvärta %@": " · Black ink %@",
   "Förhandsvisning och export: full upplösning, 8 bitar/kanal • Pappersvitt och trycksvärta påverkar bara simuleringen": "Preview and export: full resolution, 8 bits/channel • Paper white and black ink affect only the preview",
-  "Bilder med mer än 8 bitar per kanal stöds inte. Skapa en separat 8-bitarskopia först; originalet ändras inte.": "Images above 8 bits per channel are not supported. Create a separate 8-bit copy first; the original stays unchanged."
+  "Bilder med mer än 8 bitar per kanal stöds inte. Skapa en separat 8-bitarskopia först; originalet ändras inte.": "Images above 8 bits per channel are not supported. Create a separate 8-bit copy first; the original stays unchanged.",
+  "Visa 3D-färgmoln": "Show 3D colour cloud",
+  "Visa 2D": "Show 2D",
+  "Visa förflyttning": "Show movement",
+  "Återställ 3D-vy": "Reset 3D view",
+  "3D: %@ vanliga färggrupper ur %@ samplade pixlar. Dra för att rotera, rulla för att zooma. Pilar visar föregående → nytt läge.": "3D: %@ common colour groups from %@ sampled pixels. Drag to rotate, scroll to zoom. Arrows show previous → new positions.",
+  "3D visar bildens vanligaste samplade färggrupper, inte hela profilens omfång. Punktstorlek anger ungefärlig förekomst. L* är höjd; a* är grönt–rött, b* blått–gult. Punkternas skärmfärger är approximativa.": "3D shows the image’s most common sampled colour groups, not the full profile gamut. Point size indicates approximate frequency. L* is height; a* is green–red, b* blue–yellow. Screen colours are approximate."
 }

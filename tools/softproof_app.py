@@ -34,6 +34,7 @@ import Foundation as F
 import Quartz as Q
 from PyObjCTools import AppHelper
 from runtime_architecture import detect_runtime
+from cloud_view import CloudPlot
 
 APP_VERSION = (ROOT/'VERSION').read_text().strip()
 AUTHOR = 'Christer Törnkvist'
@@ -329,6 +330,15 @@ class GamutWindow:
         ui.bind(self.window, lambda: ui.text('SoftProf · Färgomfång och färgprov'), 'setTitle_')
         body = make_body(self.window)
         body.addArrangedSubview_(ui.label('Färgens väg genom profilerna · CIELAB D50', size=18))
+        self.is3d = False
+        self.mode = button(ui, 'Visa 3D-färgmoln', self.change_mode)
+        ui.bind(self.mode, lambda: ui.text('Visa 2D' if self.is3d else 'Visa 3D-färgmoln'), 'setTitle_')
+        self.cloud_role = popup(ui, ROLE_KEYS, self.change_cloud)
+        self.cloud_role.selectItemAtIndex_(2)
+        self.movement = button(ui, 'Visa förflyttning', self.change_cloud, True)
+        self.movement.setState_(A.NSControlStateValueOn)
+        self.reset3d = button(ui, 'Återställ 3D-vy', lambda _: self.cloud.reset_camera())
+        body.addArrangedSubview_(stack([self.mode, self.cloud_role, self.movement, self.reset3d]))
         self.toggles = [button(ui, key, self.change_roles, True) for key in ROLE_KEYS]
         for toggle, color in zip(self.toggles, COLORS): toggle.setState_(A.NSControlStateValueOn); toggle.setContentTintColor_(color)
         body.addArrangedSubview_(stack(self.toggles, spacing=14))
@@ -354,16 +364,36 @@ class GamutWindow:
         body.addArrangedSubview_(stack([self.follow_lightness, ui.label('L* (0–100):'), self.lightness_slider, self.lightness_value]))
         self.hint = ui.label(wrap=True, size=11); self.hint.setMaximumNumberOfLines_(2)
         self.plot = GamutPlot.alloc().initWithFrame_(R(0, 0, 600, 360))
+        self.cloud = CloudPlot.alloc().initWithFrame_(R(0, 0, 600, 360))
+        self.cloud.setHidden_(True)
+        self.canvas = A.NSView.alloc().initWithFrame_(R(0, 0, 600, 360))
+        for plot in (self.plot, self.cloud):
+            plot.setTranslatesAutoresizingMaskIntoConstraints_(False); self.canvas.addSubview_(plot)
+            for edge in ('leadingAnchor','trailingAnchor','topAnchor','bottomAnchor'):
+                getattr(plot,edge)().constraintEqualToAnchor_(getattr(self.canvas,edge)()).setActive_(True)
         self.message = ui.label('Klicka i bilden för att välja ett färgprov.', True)
         self.values = ui.label(wrap=True, size=12); self.values.setFont_(A.NSFont.monospacedSystemFontOfSize_weight_(12, A.NSFontWeightRegular))
         self.values.setMaximumNumberOfLines_(5)
         self.profiles = ui.label(wrap=True, size=11); self.profiles.setMaximumNumberOfLines_(3)
         note = ui.label('Konturer: ungefärliga konvexa ytterhöljen av samplade ICC-värden, projicerade på a*/b*-planet. De visar inte exakt om en färg ryms. Grå ringar: föregående inställning för samma pixel. Lab-punkterna visar profilernas absoluta D50-värden; skärm och pappersvitssimulering ingår inte.', True, 11)
-        for view in (self.hint, self.plot, self.message, self.values, self.profiles, note):
+        ui.bind(note, lambda: ui.text('3D visar bildens vanligaste samplade färggrupper, inte hela profilens omfång. Punktstorlek anger ungefärlig förekomst. L* är höjd; a* är grönt–rött, b* blått–gult. Punkternas skärmfärger är approximativa.' if self.is3d else 'Konturer: ungefärliga konvexa ytterhöljen av samplade ICC-värden, projicerade på a*/b*-planet. De visar inte exakt om en färg ryms. Grå ringar: föregående inställning för samma pixel. Lab-punkterna visar profilernas absoluta D50-värden; skärm och pappersvitssimulering ingår inte.'))
+        for view in (self.hint, self.canvas, self.message, self.values, self.profiles, note):
             body.addArrangedSubview_(view); view.widthAnchor().constraintEqualToAnchor_constant_(body.widthAnchor(), -32).setActive_(True)
-        self.plot.heightAnchor().constraintGreaterThanOrEqualToConstant_(300).setActive_(True)
-        self.plot.setContentHuggingPriority_forOrientation_(1, A.NSLayoutConstraintOrientationVertical)
-        self.window.setMinSize_((720, 780)); self.window.center(); self.change_lightness()
+        self.canvas.heightAnchor().constraintGreaterThanOrEqualToConstant_(300).setActive_(True)
+        self.canvas.setContentHuggingPriority_forOrientation_(1, A.NSLayoutConstraintOrientationVertical)
+        self.window.setMinSize_((780, 820)); self.window.center(); self.change_lightness()
+
+    def change_mode(self, sender=None):
+        self.is3d = not self.is3d
+        self.plot.setHidden_(self.is3d); self.cloud.setHidden_(not self.is3d)
+        self.ui.refresh(); self.update_hint()
+        self.canvas.setNeedsDisplay_(True)
+
+    def change_cloud(self, sender=None):
+        self.cloud.role = ROLES[self.cloud_role.indexOfSelectedItem()]
+        self.cloud.motion = bool(self.movement.state())
+        self.cloud.update_cloud(self.plot.data.get('cloud', {}), self.plot.data.get('points', []))
+        self.update_hint()
 
     def change_roles(self, sender=None):
         self.plot.visible_roles = {role for role, button in zip(ROLES, self.toggles) if button.state()}
@@ -381,17 +411,29 @@ class GamutWindow:
         self.update_hint(); self.plot.setNeedsDisplay_(True)
 
     def update_hint(self):
-        enabled = self.plot.tint
+        enabled = self.plot.tint and not self.is3d
+        self.background.setEnabled_(not self.is3d); self.strength.setEnabled_(enabled)
+        for toggle in self.toggles: toggle.setEnabled_(not self.is3d)
+        for control in (self.cloud_role,self.movement,self.reset3d): control.setEnabled_(self.is3d)
         self.follow_lightness.setEnabled_(enabled)
         manual = enabled and not self.follow_lightness.state()
         self.lightness_slider.setEnabled_(manual); self.lightness_value.setEnabled_(manual)
         value = self.plot.lightness()
         self.lightness_value.setDoubleValue_(value)
         if self.follow_lightness.state(): self.lightness_slider.setDoubleValue_(value)
-        self.ui.message(self.hint, 'Kulörguide: a*/b* vid L*=%@. L* 0 är svart, 100 är vitt. Endast bakgrunden ändras; konturer och färgprov är oförändrade.', f'{value:.1f}')
+        if self.is3d:
+            cloud=self.plot.data.get('cloud',{})
+            self.ui.message(self.hint, '3D: %@ vanliga färggrupper ur %@ samplade pixlar. Dra för att rotera, rulla för att zooma. Pilar visar föregående → nytt läge.', len(cloud.get('ids',[])), cloud.get('sampled',0))
+        else:
+            self.ui.message(self.hint, 'Kulörguide: a*/b* vid L*=%@. L* 0 är svart, 100 är vitt. Endast bakgrunden ändras; konturer och färgprov är oförändrade.', f'{value:.1f}')
 
     def update(self, response):
-        self.plot.update(response); self.update_hint(); ui = self.ui
+        self.plot.update(response)
+        stages={s['role'] for s in response.get('cloud',{}).get('stages',[])}
+        for i,role in enumerate(ROLES): self.cloud_role.itemAtIndex_(i).setEnabled_(role in stages)
+        if ROLES[self.cloud_role.indexOfSelectedItem()] not in stages and stages:
+            self.cloud_role.selectItemAtIndex_(1)
+        self.change_cloud(); ui = self.ui
         def message():
             pixel = response.get('pixel')
             text = (ui.text('Originalpixel x=%@, y=%@ · Pilar: original → arbetsfärgrymd → förväntad utskrift', pixel[0]+1, pixel[1]+1)
@@ -610,7 +652,10 @@ class Controller:
         self.ui.message(self.left.heading, 'Original'); self.ui.message(self.left.detail, 'Bildens färger med källprofilen')
         self.unpin.setEnabled_(False)
         for pane in (self.left, self.right): pane.set_image(None, self.original_size); pane.picture.selected = None
-        if self.gamut: self.gamut.plot.data = {}; self.gamut.plot.previous = []; self.gamut.plot.setNeedsDisplay_(True)
+        if self.gamut:
+            self.gamut.plot.data = {}; self.gamut.plot.previous = []; self.gamut.plot.setNeedsDisplay_(True)
+            self.gamut.cloud.update_cloud({}, [])
+            self.gamut.update_hint()
         self.settings_changed()
 
     def choose_profile(self, role):
@@ -693,6 +738,7 @@ class Controller:
                 if self.gamut:
                     self.ui.message(self.gamut.message, 'Ingen aktuell simulering. Kontrollera bild och profiler i huvudfönstret.')
                     self.gamut.plot.data = {}; self.gamut.plot.previous = []; self.gamut.plot.setNeedsDisplay_(True)
+                    self.gamut.cloud.update_cloud({}, [])
                     self.ui.message(self.gamut.values, '')
                 if self.args.smoke_test: self.fail_smoke(response.get('error'))
                 return
@@ -761,7 +807,7 @@ class Controller:
         self.revisions['gamut'] += 1; revision = self.revisions['gamut']
         if not self.gamut or not self.gamut.window.isVisible() or not self.ready: return
         self.ui.message(self.gamut.message, 'Beräknar färgomfång och färgprov…')
-        request = {**self.request(), 'action':'gamut', 'gamutCache':str(self.temporary/'gamut-cache')}
+        request = {**self.request(), 'action':'gamut', 'gamutCache':str(self.temporary/'gamut-cache'), 'cloud':True}
         if self.pixel is not None: request['pixel'] = self.pixel.copy()
         def done(response, folder):
             if revision != self.revisions['gamut']: return
@@ -772,6 +818,7 @@ class Controller:
                 self.ui.message(self.gamut.message, response.get('error', 'Färgomfånget kunde inte beräknas.'))
                 self.ui.message(self.gamut.values, '')
                 self.gamut.plot.data = {}; self.gamut.plot.previous = []; self.gamut.plot.setNeedsDisplay_(True)
+                self.gamut.cloud.update_cloud({}, [])
                 if self.args.smoke_test: self.fail_smoke(response.get('error'))
         self.worker('gamut', request, done)
 
@@ -844,6 +891,17 @@ class Controller:
         assert len(self.gamut.plot.previous) == 3
         assert response['points'][1]['channels'] != self.smoke_channels
         assert len(response['profiles']) == len(response['points']) == 3
+        import time
+        import numpy as np
+        cloud=self.gamut.cloud
+        assert cloud.old is not None and np.any(np.abs(cloud.target-cloud.old)>1e-6)
+        cloud.start_time=time.monotonic()-.425; cloud.tick(cloud.token)
+        assert 0<cloud.progress<1
+        np.testing.assert_allclose(cloud.current, cloud.old+(cloud.target-cloud.old)*(cloud.progress**2*(3-2*cloud.progress)))
+        cloud.start_time=time.monotonic()-1; cloud.tick(cloud.token)
+        assert cloud.progress==1
+        np.testing.assert_allclose(cloud.current,cloud.target)
+
         before = self.request(); reference = bytes(self.reference.TIFFRepresentation()); pixel = self.pixel.copy()
         for language in ('en','sv','en'):
             self.language.selectItemAtIndex_(language=='en'); self.change_language()
@@ -893,7 +951,25 @@ class Controller:
         from PIL import Image
         rgb = np.asarray(Image.open(output.with_name(output.stem+'-gamut.png')).convert('RGB'), dtype=int)
         assert ((rgb.max(axis=2)-rgb.min(axis=2)) > 30).mean() > 0.12, 'Gamut colour background is missing'
-        print('PASS: Python native UI, ICC previews, A/B reference, zoom/scroll, pixel selection, gamut, tint, languages and full-resolution export', flush=True)
+        assert self.gamut.cloud.data['ids'], 'Empty image colour cloud'
+        assert self.gamut.cloud.old is not None, 'Cloud colours did not retain identity across settings'
+        self.gamut.change_mode()
+        assert self.gamut.is3d and self.gamut.plot.isHidden() and not self.gamut.cloud.isHidden()
+        self.gamut.cloud.yaw += .3; self.gamut.cloud.zoom = 1.1
+        self.gamut.cloud.display()
+        self.gamut.window.contentView().layoutSubtreeIfNeeded()
+        view=self.gamut.window.contentView(); bitmap=view.bitmapImageRepForCachingDisplayInRect_(view.bounds())
+        view.cacheDisplayInRect_toBitmapImageRep_(view.bounds(),bitmap)
+        cloud_path=output.with_name(output.stem+'-cloud.png')
+        bitmap.representationUsingType_properties_(A.NSBitmapImageFileTypePNG,{}).writeToFile_atomically_(str(cloud_path),True)
+        cloud_rgb=np.asarray(Image.open(cloud_path).convert('RGB'),dtype=int)
+        assert ((cloud_rgb.max(axis=2)-cloud_rgb.min(axis=2))>40).sum()>1000, 'Cloud colours missing'
+        self.gamut.movement.setState_(0); self.gamut.change_cloud()
+        assert self.gamut.cloud.old is None
+        self.gamut.movement.setState_(1); self.gamut.change_cloud()
+        self.gamut.cloud.reset_camera(); assert self.gamut.cloud.zoom == 1
+        self.gamut.change_mode(); assert not self.gamut.is3d
+        print('PASS: Python native UI, ICC previews, A/B, zoom/scroll, pixel selection, 2D/3D colour cloud, movement, tint, languages and full-resolution export', flush=True)
         self.smoke_phase = 5
         A.NSApplication.sharedApplication().terminate_(None)
 

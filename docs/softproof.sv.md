@@ -1,6 +1,6 @@
 # SoftProf
 
-Handbok - version 2.2.4 - 6 november 2026
+Handbok - version 2.3.0 - 6 november 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 eller senare (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ SoftProf jämför en bild med en beräknad simulering av dess utskrift. Du kan u
 
 ### Installera appen
 
-Öppna `SoftProf-2.2.4-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar för **macOS 14 eller senare**. Apple Silicon är ARM64; Intel är x86_64. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
+Öppna `SoftProf-2.3.0-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar för **macOS 14 eller senare**. Apple Silicon är ARM64; Intel är x86_64. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
 
 Paketet är ad hoc-signerat men saknar Developer ID-signering och Apple-notarisering. Om macOS blockerar första starten, granska appen i **Systeminställningar > Integritet och säkerhet > Öppna ändå**. DMG-filen innehåller båda handböckerna, GPL-licensen och appens källkod.
 
@@ -88,7 +88,7 @@ Färgomfångsfönstret redovisar källvärden, arbetsfärgrymd och förväntade 
 
 ## 4. Läs färgomfångsdiagrammet
 
-Alla profiler jämförs i **CIELAB D50**. Diagrammet visar a*/b*-planet ovanifrån. Axelvärdena har samma skala per enhet och utvidgas vid behov utan att krympa när du ändrar inställningar.
+Alla profiler jämförs i **CIELAB D50**. Den vanliga 2D-vyn visar a*/b*-planet ovanifrån. Axelvärdena har samma skala per enhet och utvidgas vid behov utan att krympa när du ändrar inställningar.
 
 <!-- gamut -->
 
@@ -106,7 +106,17 @@ Sifferraderna visar L*, a*, b*, kanalvärden och **ΔE76 från originalet**. Lab
 
 Konturerna är konvexa ytterhöljen av samplade ICC-enhetsvärden, projicerade till ett plan. Den tredje dimensionen sammanförs och konkava delar kan överskattas. Samplingen använder 17 nivåer per RGB-/Lab-kanal och 9 per CMYK-kanal, utan separat begränsning av totalfärg i CMYK. En punkt innanför konturen bevisar inte att färgen kan skrivas ut vid sitt L*.
 
-## 5. Spara och skriv ut
+## 5. 3D-färgmoln och förflyttning
+
+Välj **Visa 3D-färgmoln**; **Visa 2D** återgår till diagrammet. Välj **Original**, **Arbetsfärgrymd** eller **Utskrift** i molnets meny. Dra för att rotera, rulla för att zooma eller välj **Återställ 3D-vy**. L* är höjd, a* grönt-rött och b* blått-gult. Bildens valda pixel markeras med en vit ring i valt steg. L*-reglaget för bakgrunden gäller bara 2D.
+
+Markera **Visa förflyttning** och ändra arbetsfärgrymd, skrivarprofil, återgivningsmetod eller BPC i huvudfönstret. Samma representanter animeras från föregående till nya lägen; pilarna finns kvar för jämförelse. Byte av molnets steg visar också förflyttningen. Avmarkera för ett statiskt moln. Färgbevarande konvertering kan ge mycket små rörelser; pappersvitt och trycksvärta ändrar inte absoluta Lab-positioner.
+
+Molnet visar upp till 1 024 vanliga grupper ur högst 65 536 reproducerbart samplade pixlar. Närliggande källkanalvärden grupperas och en faktisk originalpixel representerar varje grupp. Punktstorleken ökar med ungefärlig samplad förekomst; helt genomskinliga pixlar utelämnas och delvis alfa viktar förekomsten. Ovanliga färger kan utelämnas. Punkterna är bildens fördelning, inte ett helt profilomfång eller volymskal. Punkternas Display P3-skärmfärger är approximativa. Originalbilderna ändras inte.
+
+<!-- cloud -->
+
+## 6. Spara och skriv ut
 
 Välj **Konvertera och spara** när en bild och en skrivar-/pappersprofil är valda. Appen bearbetar hela bilden via arbetsfärgrymden och skrivarprofilen och bäddar sedan in vald ICC-fil **byte för byte**. Originalbilden får inte skrivas över.
 
@@ -130,7 +140,7 @@ En lyckad export eller en liten förutsagd ΔE visar inte uppmätt utskriftsnogg
 
 En numerisk jämförelse med Photoshop 27.11 hittade och rättade ett optimeringsfel i mörka toner. Kvarvarande skillnader redovisas i färgkontrollrapporten på GitHub. Detta verifierar inte Photoshops korrekturvisning på skärmen eller fysisk utskriftsnoggrannhet.
 
-## 6. Språk, arkitektur och licens
+## 7. Språk, arkitektur och licens
 
 ### Språk och avslut
 
