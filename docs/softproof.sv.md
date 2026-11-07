@@ -1,6 +1,6 @@
 # SoftProf
 
-Handbok - version 2.4.6 - 6 november 2026
+Handbok - version 2.4.7 - 6 november 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 eller senare (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ SoftProf jämför en bild med en beräknad simulering av dess utskrift. Du kan u
 
 ### Installera appen
 
-Öppna `SoftProf-2.4.6-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar: **Apple Silicon kräver macOS 14+; Intel kräver macOS 13 Ventura+**. Apple Silicon är ARM64; Intel är x86_64. Alla Intel-binärer kontrolleras mot Venturas systemkrav. Fysisk Ventura-maskin har inte testats här. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
+Öppna `SoftProf-2.4.7-macos.dmg`, välj **Apple Silicon** eller **Intel** efter datorns processor och dra den appen till **Applications / Program**, mata ut skivavbilden och starta appen från Program. DMG-filen har två märkta appar: **Apple Silicon kräver macOS 14+; Intel kräver macOS 13 Ventura+**. Apple Silicon är ARM64; Intel är x86_64. Alla Intel-binärer kontrolleras mot Venturas systemkrav. Fysisk Ventura-maskin har inte testats här. Installera bara rätt app för din dator. Python och nödvändiga bibliotek ingår; utvecklingsprojektet behövs inte.
 
 Paketet är ad hoc-signerat men saknar Developer ID-signering och Apple-notarisering. Om macOS blockerar första starten, granska appen i **Systeminställningar > Integritet och säkerhet > Öppna ändå**. DMG-filen innehåller båda handböckerna, GPL-licensen och appens källkod.
 
@@ -134,7 +134,7 @@ Markera **Visa förflyttning** och ändra arbetsfärgrymd, skrivarprofil, återg
 
 ## 6. Spara och skriv ut
 
-Välj **Konvertera och spara** när en bild och en skrivar-/pappersprofil är valda. Appen bearbetar hela bilden via arbetsfärgrymden och skrivarprofilen och bäddar sedan in vald ICC-fil **byte för byte**. Originalbilden får inte skrivas över.
+Välj **Konvertera och spara** när en bild och en skrivar-/pappersprofil är valda. Appen bearbetar hela bilden via arbetsfärgrymden och skrivarprofilen och bäddar sedan in vald ICC-fil **byte för byte**. Originalbilden får inte skrivas över. Nya filer följer systemets umask; ersättning av en befintlig export bevarar dess behörighetsbitar. En temporär fil skrivs färdigt innan målfilen ersätts.
 
 | Format | Utkanaler som stöds |
 | --- | --- |
@@ -150,7 +150,7 @@ Exportbilden är redan konverterad till skrivarprofilen. Skriv ut dessa värden 
 
 ### Versionens begränsningar
 
-Appen stöder en bildruta och **8 eller osignerade 16 bitar per kanal**. För 16-bitarsbilder använder RGB/RGBA och gråskala/alfa TIFF eller PNG; CMYK använder TIFF. TIFF stöder okomprimerat, LZW, Deflate/ZIP och PackBits, separata kanalplan och orientering. ICC-konvertering, valda pixlar, 3D-positioner och TIFF/PNG-export bevarar 16-bitars precision. Kanalvärdena går från 0 till 65 535 i stället för 0 till 255. JPEG är bara 8 bitar och kan inte väljas för 16-bitarsoriginal. Filer med 16-bitars Lab och 32-bitars/flyttalsbilder stöds inte; en Lab-arbetsprofil fungerar fortfarande. Export bevarar pixelmått, ICC, DPI och stödd alfa, inte all EXIF/XMP. Pappersvitt och trycksvärta bakas inte in i exporten.
+Indexerade PNG-bilder utökas till RGB/RGBA med bevarad ICC-profil och transparens. Appen stöder en bildruta och **8 eller osignerade 16 bitar per kanal**. För 16-bitarsbilder använder RGB/RGBA och gråskala/alfa TIFF eller PNG; CMYK använder TIFF. TIFF stöder okomprimerat, LZW, Deflate/ZIP och PackBits, separata kanalplan och orientering. ICC-konvertering, valda pixlar, 3D-positioner och TIFF/PNG-export bevarar 16-bitars precision. Kanalvärdena går från 0 till 65 535 i stället för 0 till 255. JPEG är bara 8 bitar och kan inte väljas för 16-bitarsoriginal. Filer med 16-bitars Lab och 32-bitars/flyttalsbilder stöds inte; en Lab-arbetsprofil fungerar fortfarande. Export bevarar pixelmått, ICC, DPI och stödd alfa, inte all EXIF/XMP. Pappersvitt och trycksvärta bakas inte in i exporten.
 
 En lyckad export eller en liten förutsagd ΔE visar inte uppmätt utskriftsnoggrannhet. Bedöm viktiga arbeten med en korrekt förberedd fysisk provutskrift.
 
@@ -162,7 +162,7 @@ En numerisk jämförelse med Photoshop 27.11 hittade och rättade ett optimering
 
 Välj **Svenska** eller **English** vid **Språk / Language**. Båda fönstren, menyer, statusmeddelanden och appens egna feltexter uppdateras direkt. Profilval, färgprov och låst referens bevaras. Valet återställs vid nästa start. Profilnamn och filnamn översätts inte; macOS egna knappar och systemfel kan följa systemspråket.
 
-**Avsluta** finns längst ned till höger i huvudfönstret. Du kan även använda appmenyn eller Kommando-Q.
+**Avsluta** finns längst ned till höger i huvudfönstret. Du kan även använda appmenyn eller Kommando-Q. Vanlig avslutning väntar tills en pågående export är klar. Vid SIGTERM städar exportprocessen sin temporära fil; tvångsavslutning eller strömavbrott kan inte garantera städning.
 
 ### ARM, Intel och Rosetta
 

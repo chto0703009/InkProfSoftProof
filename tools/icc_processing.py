@@ -3,7 +3,8 @@
 """GUI-independent ICC conversion and atomic image export."""
 import os
 from pathlib import Path
-import tempfile
+import secrets
+import stat
 from PIL import Image, ImageCms
 
 INTENTS = {'Relativ kolorimetrisk': 1, 'Absolut kolorimetrisk': 3, 'Perceptuell': 0}
@@ -71,10 +72,15 @@ def save_image(image, destination, original, dpi=None):
         options.update(quality=100, subsampling=0)
     if fmt == 'TIFF':
         options['compression'] = 'tiff_lzw'
-    fd, temporary = tempfile.mkstemp(prefix='.inkprof-', dir=destination.parent)
+    previous_mode = stat.S_IMODE(destination.stat().st_mode) if destination.exists() else None
+    temporary = destination.parent / ('.softprof-' + secrets.token_hex(16))
+    # O_EXCL prevents collisions; the kernel applies the current umask.
+    fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666)
     os.close(fd)
     try:
         image.save(temporary, format=fmt, **options)
+        if previous_mode is not None:
+            os.chmod(temporary, previous_mode)
         os.replace(temporary, destination)
     finally:
         if os.path.exists(temporary):

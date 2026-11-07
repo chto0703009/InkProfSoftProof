@@ -9,6 +9,7 @@ import shutil
 import tempfile
 import json
 import sys
+import signal
 from pathlib import Path
 from PIL import Image, ImageCms, ImageOps
 from icc_processing import process, profile_mode, save_image
@@ -48,6 +49,9 @@ def load_image(path, source_path=None):
         if high_depth:
             from image16 import read_image16
             image=read_image16(path,opened)
+        elif opened.mode == 'P' and opened.format == 'PNG':
+            image = ImageOps.exif_transpose(opened).convert('RGBA' if 'transparency' in opened.info else 'RGB')
+            image.load()
         elif opened.mode not in ('RGB', 'RGBA', 'CMYK', 'L', 'LA', 'LAB'):
             raise ValueError('Bildtypen stöds inte. Använd RGB, CMYK eller gråskala med 8 eller 16 bitar per kanal, eller 8-bitars Lab.')
         else:
@@ -112,7 +116,7 @@ def run(request):
         key=hashlib.sha256(json.dumps(inputs,sort_keys=True).encode()).hexdigest()
         render_entry=cache_root/('softprof-render-'+key)
         if render_entry.exists() and not (render_entry/'.softprof-entry').is_file():
-            raise ValueError('The preview cache directory is not owned by SoftProf.')
+            raise ValueError('Förhandsvisningens cachemapp tillhör inte SoftProf.')
         if (render_entry/'metadata.json').exists():
             try:
                 result=json.loads((render_entry/'metadata.json').read_text())
@@ -199,7 +203,13 @@ def run(request):
     return result
 
 
+def terminate_worker(signum, frame):
+    # Unwind save_image's finally block rather than abandoning an export file.
+    raise SystemExit(128 + signum)
+
+
 def main():
+    signal.signal(signal.SIGTERM, terminate_worker)
     request_path, response_path = map(Path, sys.argv[1:3])
     try:
         response = run(json.loads(request_path.read_text()))

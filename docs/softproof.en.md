@@ -1,6 +1,6 @@
 # SoftProf
 
-User guide - version 2.4.6 - 6 November 2026
+User guide - version 2.4.7 - 6 November 2026
 
 Christer Törnkvist - christer@borgasundsfotografiska.se
 GNU GPL version 3 or later (GPL-3.0-or-later).
@@ -11,7 +11,7 @@ SoftProf compares an image with a prediction of its printed appearance. It helps
 
 ### Install the app
 
-Open `SoftProf-2.4.6-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps: **Apple Silicon requires macOS 14+; Intel requires macOS 13 Ventura+**. Apple Silicon is ARM64; Intel is x86_64. All bundled Intel binaries are checked against the Ventura deployment target. Physical Ventura hardware has not been tested here. Install only the matching app. Python and the required libraries are included; the development project is not needed.
+Open `SoftProf-2.4.7-macos.dmg`, choose **Apple Silicon** or **Intel** to match your Mac and drag that app to **Applications**, eject the disk image and launch the app from Applications. The DMG contains two labelled apps: **Apple Silicon requires macOS 14+; Intel requires macOS 13 Ventura+**. Apple Silicon is ARM64; Intel is x86_64. All bundled Intel binaries are checked against the Ventura deployment target. Physical Ventura hardware has not been tested here. Install only the matching app. Python and the required libraries are included; the development project is not needed.
 
 The package is ad hoc signed, but not Developer ID signed or Apple-notarized. If macOS blocks the first launch, review it in **System Settings > Privacy & Security > Open Anyway**. The DMG includes both manuals, the GPL license and application source.
 
@@ -134,7 +134,7 @@ The 3D view shows up to 1,024 frequent groups from at most 65,536 deterministic 
 
 ## 6. Export and print
 
-Choose **Convert and save** after selecting an image and printer/paper profile. The app processes the full image via the selected working space and printer profile, then embeds the selected printer ICC file **byte for byte**. The source image cannot be overwritten.
+Choose **Convert and save** after selecting an image and printer/paper profile. The app processes the full image via the selected working space and printer profile, then embeds the selected printer ICC file **byte for byte**. The source image cannot be overwritten. New files follow the system umask; replacing an existing export preserves its permission bits. A temporary file is completed before replacing the destination.
 
 | Format | Supported output channels |
 | --- | --- |
@@ -150,7 +150,7 @@ The exported image is already converted to the printer profile. Print these valu
 
 ### Version limits
 
-The app supports one image frame and **8 or unsigned 16 bits per channel**. For 16-bit images, RGB/RGBA and grayscale/alpha use TIFF or PNG; CMYK uses TIFF. TIFF supports uncompressed, LZW, Deflate/ZIP and PackBits data, separate planes and orientation. ICC conversion, selected pixels, 3D positions and TIFF/PNG export retain 16-bit precision. Values range from 0 to 65,535 instead of 0 to 255. JPEG is 8-bit only and cannot be chosen for 16-bit sources. File-based 16-bit Lab and 32-bit/floating-point images are unsupported; a Lab working profile is still supported. Export retains pixel dimensions, ICC, DPI and supported alpha, not all EXIF/XMP. Paper and ink simulation are not baked into export.
+Indexed PNGs are expanded to RGB/RGBA with their ICC profile and transparency retained. The app supports one image frame and **8 or unsigned 16 bits per channel**. For 16-bit images, RGB/RGBA and grayscale/alpha use TIFF or PNG; CMYK uses TIFF. TIFF supports uncompressed, LZW, Deflate/ZIP and PackBits data, separate planes and orientation. ICC conversion, selected pixels, 3D positions and TIFF/PNG export retain 16-bit precision. Values range from 0 to 65,535 instead of 0 to 255. JPEG is 8-bit only and cannot be chosen for 16-bit sources. File-based 16-bit Lab and 32-bit/floating-point images are unsupported; a Lab working profile is still supported. Export retains pixel dimensions, ICC, DPI and supported alpha, not all EXIF/XMP. Paper and ink simulation are not baked into export.
 
 A successful export or small predicted ΔE is not evidence of measured print accuracy. Assess important work with a correctly prepared physical test print.
 
@@ -162,7 +162,7 @@ A synthetic numerical comparison with Photoshop 27.11 found and corrected a dark
 
 Select **Svenska** or **English** at **Språk / Language**. Both windows, menus, status messages and application errors update immediately. Profile choices, the selected pixel and locked reference are preserved. The choice is restored on the next launch. Profile names and filenames are not translated; macOS-owned buttons and system errors may follow the system language.
 
-**Quit** is at the bottom right of the main window. You can also use the app menu or Command-Q.
+**Quit** is at the bottom right of the main window. You can also use the app menu or Command-Q. Normal Quit waits for an active export to finish. A worker terminated with SIGTERM removes its temporary export file; force-kill or power loss cannot guarantee cleanup.
 
 ### ARM, Intel and Rosetta
 

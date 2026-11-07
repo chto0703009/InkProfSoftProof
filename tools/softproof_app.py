@@ -531,6 +531,19 @@ class Delegate(A.NSObject):
             self.owner.exit_code = 1
             self.owner.stop()
             os._exit(1)
+    def applicationShouldTerminate_(self, app):
+        process = self.owner.processes.get('save')
+        if process is None or process.poll() is not None:
+            return A.NSTerminateNow
+        self.owner.ui.message(self.owner.status, 'Sparar klart innan appen avslutas…')
+        def finish():
+            if process.poll() is None:
+                later(0.1, finish)
+            else:
+                app.replyToApplicationShouldTerminate_(True)
+        later(0.1, finish)
+        return A.NSTerminateLater
+
     def applicationShouldTerminateAfterLastWindowClosed_(self, app): return True
     def applicationWillTerminate_(self, notification): self.owner.stop()
     def windowDidResize_(self, notification): self.owner.update_zoom()

@@ -141,7 +141,7 @@ def render(language):
     def furniture(c,doc):
         c.saveState();w,h=A4
         c.setFillColor(NAVY);c.setFont('GuideBold',10);c.drawString(42,h-31,'SOFTPROF')
-        c.setFont('Guide',8);c.drawRightString(w-42,h-31,f'{VERSION}  |  {label}  |  2026-11-06')
+        c.setFont('Guide',8);c.drawRightString(w-42,h-31,f'{VERSION}  |  {label}  |  2026-11-07')
         c.setStrokeColor(TEAL);c.setLineWidth(2);c.line(42,h-43,w-42,h-43)
         c.setFont('Guide',7.2);c.setFillColor(NAVY)
         c.drawString(42,29,f'Christer Törnkvist  |  {EMAIL}  |  GPL-3.0-or-later')
